@@ -22,3 +22,5 @@ src/.vs/
 src/packages/
 **/_Ncrunch_*/
 *.ncrunchsolution
+
+src/Properties/launchSettings.json
