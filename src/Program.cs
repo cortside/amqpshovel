@@ -12,7 +12,6 @@ namespace AmqpShovel {
               .WithNotParsed<ShovelOptions>((errs) => HandleParseError(errs));
         }
 
-
         private static void HandleParseError(IEnumerable<Error> errs) {
             foreach (var err in errs) {
                 Console.Out.WriteLine(err.ToString());
@@ -20,7 +19,6 @@ namespace AmqpShovel {
         }
 
         private static void RunOptionsAndReturnExitCode(ShovelOptions opts) {
-            //SBMessageHandler.ResendDeadLetters(opts).GetAwaiter().GetResult();
             AmqpMessageHandler.ResendDeadLetters(opts);
         }
     }
