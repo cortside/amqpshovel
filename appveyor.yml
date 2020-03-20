@@ -99,8 +99,6 @@ deploy:
   prerelease: false
   on:
     branch: master                 # release from master branch only
-
-deploy:
 - provider: GitHub
   auth_token:
     secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
@@ -108,4 +106,4 @@ deploy:
   draft: false
   prerelease: true
   on:
-    branch: develop                 # release from master branch only
+    branch: develop                 
