@@ -100,6 +100,8 @@ deploy:
   on:
     branch: master                 # release from master branch only
 - provider: GitHub
+  release: myproduct-v$(appveyor_build_version)
+  description: '$(appveyor_build_version)-develop'
   auth_token:
     secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
   artifact: deploy
