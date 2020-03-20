@@ -51,8 +51,8 @@ after_build:
         }
     }
     
-artifacts:
-- path: artifacts\**\*.*
+#artifacts:
+#- path: artifacts\**\*.*
 
 cache:
 - '%USERPROFILE%\.nuget\packages'
@@ -83,3 +83,14 @@ nuget:
 #  on:
 #    branch: master                 # release from master branch only
 #    APPVEYOR_REPO_TAG: true        # deploy on tag push only
+
+after_build:
+- cmd: 7z a amqptools.zip %APPVEYOR_BUILD_FOLDER%\publish\*.*
+artifacts:
+- path: amqptools.zip
+  name: deploy
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
+  artifact: deploy
