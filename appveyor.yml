@@ -92,6 +92,7 @@ artifacts:
   name: deploy
 deploy:
 - provider: GitHub
+  description: '$(appveyor_build_version)-master'
   auth_token:
     secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
   artifact: deploy
