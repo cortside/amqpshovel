@@ -1,0 +1,109 @@
+## https://www.appveyor.com/docs/appveyor-yml/
+
+image: Visual Studio 2019
+
+version: 1.0.{build}
+
+configuration:
+- Debug
+
+platform: Any CPU
+
+environment:
+  # Don't report back to the mothership
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+init:
+- ps: $Env:LABEL = "CI" + $Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
+
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+
+before_build:
+- appveyor-retry dotnet restore src/AmqpTools.sln -v Minimal
+- set DNX_BUILD_VERSION=%APPVEYOR_BUILD_NUMBER%
+- dotnet --info
+
+build:
+  publish_nuget: true
+  publish_nuget_symbols: true
+  include_nuget_references: true
+  verbosity: minimal
+
+build_script:
+- dotnet build src/AmqpTools.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
+- dotnet publish /p:PublishSingleFile=true --self-contained --output publish src/AmqpShovel/AmqpShovel.csproj
+
+after_build:
+- ps: >-
+    $branch = $ENV:APPVEYOR_REPO_BRANCH;
+    $fileVersion = $env:APPVEYOR_BUILD_VERSION;
+    if($branch -ne 'master') {
+        $fileVersion = "${fileVersion}-${branch}"; 
+    }
+    gci -include *.nuspec -Recurse | %{ 
+        $csproj = ($_.Fullname).Replace('.nuspec','.csproj')
+        if((Test-Path -path $_.Fullname) -and (Test-Path -path $csproj )) { 
+            dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
+        }
+    }
+- cmd: 7z a amqptools.zip %APPVEYOR_BUILD_FOLDER%\publish\*.*
+- cmd: appveyor PushArtifact amqptools.zip
+    
+#artifacts:
+#- path: artifacts\**\*.*
+
+cache:
+- '%USERPROFILE%\.nuget\packages'
+  
+nuget:
+  disable_publish_on_pr: true
+#  account_feed: true
+#  project_feed: true
+  
+#test:
+#  assemblies:
+#    - '**\test\Cortside.Common.Test.ApplicationService.dll'
+
+#deploy:
+#- provider: NuGet
+#  api_key:
+#    secure: ObtpuUmk0xC2aZ3+pVBY1xARi6fM7LdzNqot5Cr8Iwoitol4oElmDnU9SNGkD+3w
+
+#deploy:
+#  release: myproduct-v$(appveyor_build_version)
+#  description: 'Release description'
+#  provider: GitHub
+#  auth_token:
+#    secure: <your encrypted token> # your encrypted token from GitHub
+#  artifact: /.*\.nupkg/            # upload all NuGet packages to release assets
+#  draft: false
+#  prerelease: false
+#  on:
+#    branch: master                 # release from master branch only
+#    APPVEYOR_REPO_TAG: true        # deploy on tag push only
+
+artifacts:
+- path: amqptools.zip
+  name: deploy
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
+  artifact: deploy
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+- provider: GitHub
+  auth_token:
+    secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
+  artifact: deploy
+  draft: false
+  prerelease: true
+  on:
+    branch: develop                 
