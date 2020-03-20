@@ -50,6 +50,7 @@ after_build:
             dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
         }
     }
+- cmd: 7z a amqptools.zip %APPVEYOR_BUILD_FOLDER%\publish\*.*
     
 #artifacts:
 #- path: artifacts\**\*.*
@@ -84,8 +85,6 @@ nuget:
 #    branch: master                 # release from master branch only
 #    APPVEYOR_REPO_TAG: true        # deploy on tag push only
 
-after_build:
-- cmd: 7z a amqptools.zip %APPVEYOR_BUILD_FOLDER%\publish\*.*
 artifacts:
 - path: amqptools.zip
   name: deploy
