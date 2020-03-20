@@ -24,7 +24,7 @@ assembly_info:
   assembly_informational_version: '{version}'
 
 before_build:
-- appveyor-retry dotnet restore src/AmqpShovel.sln -v Minimal
+- appveyor-retry dotnet restore src/AmqpTools.sln -v Minimal
 - set DNX_BUILD_VERSION=%APPVEYOR_BUILD_NUMBER%
 - dotnet --info
 
@@ -35,7 +35,7 @@ build:
   verbosity: minimal
 
 build_script:
-- dotnet build src/AmqpShovel.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
+- dotnet build src/AmqpTools.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
 
 after_build:
 - ps: >-
