@@ -4,7 +4,7 @@ using CommandLine;
 
 namespace AmqpShovel {
 
-    public class Program {
+    public static class Program {
 
         static void Main(string[] args) {
             CommandLine.Parser.Default.ParseArguments<ShovelOptions>(args)
