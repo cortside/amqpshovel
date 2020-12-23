@@ -35,14 +35,9 @@ build:
   verbosity: minimal
 
 build_script:
-- dotnet build src/AmqpTools.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
-- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpShovel/AmqpShovel.csproj
-- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpPublisher/AmqpPublisher.csproj
-- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpQueue/AmqpQueue.csproj
-- dotnet build src/AmqpTools.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
-- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpShovel/AmqpShovel.csproj
-- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpPublisher/AmqpPublisher.csproj
-- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpQueue/AmqpQueue.csproj
+- ps: >-
+    ./clean.ps1
+    ./build.ps1
 
 after_build:
 - ps: >-
