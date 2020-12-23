@@ -36,9 +36,12 @@ build:
 
 build_script:
 - dotnet build src/AmqpTools.sln --configuration %Configuration% /property:Version=%APPVEYOR_BUILD_VERSION%
-- dotnet publish /p:PublishSingleFile=true --self-contained --output publish src/AmqpShovel/AmqpShovel.csproj
-- dotnet publish /p:PublishSingleFile=true --self-contained --output publish src/AmqpPublisher/AmqpPublisher.csproj
-- dotnet publish /p:PublishSingleFile=true --self-contained --output publish src/AmqpQueue/AmqpQueue.csproj
+- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpShovel/AmqpShovel.csproj
+- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpPublisher/AmqpPublisher.csproj
+- dotnet publish -r win-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/win-x64 src/AmqpQueue/AmqpQueue.csproj
+- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpShovel/AmqpShovel.csproj
+- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpPublisher/AmqpPublisher.csproj
+- dotnet publish -r alpine-x64 -c Debug /p:PublishSingleFile=true --self-contained --output publish/alpine-x64 src/AmqpQueue/AmqpQueue.csproj
 
 after_build:
 - ps: >-
@@ -53,48 +56,21 @@ after_build:
             dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
         }
     }
-- cmd: 7z a amqptools.zip %APPVEYOR_BUILD_FOLDER%\publish\*.*
+- cmd: 7z a amqptools.zip -r %APPVEYOR_BUILD_FOLDER%\publish\*.*
 - cmd: appveyor PushArtifact amqptools.zip
     
-#artifacts:
-#- path: artifacts\**\*.*
-
 cache:
 - '%USERPROFILE%\.nuget\packages'
   
 nuget:
   disable_publish_on_pr: true
-#  account_feed: true
-#  project_feed: true
-  
-#test:
-#  assemblies:
-#    - '**\test\Cortside.Common.Test.ApplicationService.dll'
-
-#deploy:
-#- provider: NuGet
-#  api_key:
-#    secure: ObtpuUmk0xC2aZ3+pVBY1xARi6fM7LdzNqot5Cr8Iwoitol4oElmDnU9SNGkD+3w
-
-#deploy:
-#  release: myproduct-v$(appveyor_build_version)
-#  description: 'Release description'
-#  provider: GitHub
-#  auth_token:
-#    secure: <your encrypted token> # your encrypted token from GitHub
-#  artifact: /.*\.nupkg/            # upload all NuGet packages to release assets
-#  draft: false
-#  prerelease: false
-#  on:
-#    branch: master                 # release from master branch only
-#    APPVEYOR_REPO_TAG: true        # deploy on tag push only
 
 artifacts:
 - path: amqptools.zip
   name: deploy
 deploy:
 - provider: GitHub
-  description: '$(appveyor_build_version)-master'
+  description: '$(appveyor_build_version)'
   auth_token:
     secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
   artifact: deploy
