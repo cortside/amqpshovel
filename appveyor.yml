@@ -37,6 +37,7 @@ build:
 build_script:
 - ps: >-
     ./build.ps1 -runtime win-x64;
+    ./build.ps1 -runtime linux-x64;
     ./build.ps1 -runtime alpine-x64;
 
 after_build:
