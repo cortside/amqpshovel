@@ -36,8 +36,8 @@ build:
 
 build_script:
 - ps: >-
-    ./clean.ps1
-    ./build.ps1
+    ./clean.ps1;
+    ./build.ps1;
 
 after_build:
 - ps: >-
