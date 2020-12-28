@@ -15,3 +15,5 @@ echo $runtime
 dotnet publish -r $runtime -c Debug /p:PublishSingleFile=true /p:PublishTrimmed=true --output publish/$runtime src/AmqpShovel/AmqpShovel.csproj
 dotnet publish -r $runtime -c Debug /p:PublishSingleFile=true /p:PublishTrimmed=true --output publish/$runtime src/AmqpPublisher/AmqpPublisher.csproj
 dotnet publish -r $runtime -c Debug /p:PublishSingleFile=true /p:PublishTrimmed=true --output publish/$runtime src/AmqpQueue/AmqpQueue.csproj
+
+ls publish/$runtime
