@@ -53,7 +53,7 @@ after_build:
             dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
         }
     }
-- cmd: 7z a amqptools.zip -r %APPVEYOR_BUILD_FOLDER%\publish\*.*
+- cmd: 7z a amqptools.zip -r %APPVEYOR_BUILD_FOLDER%\publish\*
 - cmd: appveyor PushArtifact amqptools.zip
     
 cache:
