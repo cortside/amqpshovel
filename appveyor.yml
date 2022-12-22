@@ -69,7 +69,7 @@ deploy:
 - provider: GitHub
   description: '$(appveyor_build_version)'
   auth_token:
-    secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
+    secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
   artifact: deploy
   draft: false
   prerelease: false
@@ -78,7 +78,7 @@ deploy:
 - provider: GitHub
   description: '$(appveyor_build_version)-develop'
   auth_token:
-    secure: zCTy7HewzmO4PXDIy8WegsOGMYq05BxUr+Y6RBBG5RIbcMX7exf/C7+cBgv5yhDY
+    secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
   artifact: deploy
   draft: false
   prerelease: true
