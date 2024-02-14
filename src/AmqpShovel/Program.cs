@@ -8,7 +8,6 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpShovel {
-
     public class Program {
         const int ERROR_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;

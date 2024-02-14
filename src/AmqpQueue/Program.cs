@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using AmqpCommon;
+using Azure.Messaging.ServiceBus.Administration;
 using CommandLine;
-using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpQueue {
-
     public class Program {
         private const int EXIT_SUCCESS = 0;
         private static ILogger<Program> logger;
@@ -39,11 +38,13 @@ namespace AmqpQueue {
         }
 
         public static int GetCountDetails(AmqpMessageHandler handler, BaseOptions opts) {
-            var managementClient = new ManagementClient(opts.ConnectionString);
-            var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
+            // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/servicebus/Azure.Messaging.ServiceBus/MigrationGuide.md
+
+            var managementClient = new ServiceBusAdministrationClient(opts.ConnectionString);
+            var queue = managementClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
 
             // write to stdout for piping
-            Console.Out.WriteLine(JsonConvert.SerializeObject(queue.MessageCountDetails));
+            Console.Out.WriteLine(JsonConvert.SerializeObject(queue.Value));
             return EXIT_SUCCESS;
         }
     }
