@@ -1,24 +1,26 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Xml;
 using Amqp;
 using Amqp.Framing;
+using AmqpCommon.Commands;
 using Microsoft.Extensions.Logging;
 using Message = Amqp.Message;
 
 namespace AmqpCommon {
     public class AmqpMessageHandler {
         const string MESSAGE_TYPE_KEY = "Message.Type.FullName";
-        private readonly ILogger<AmqpMessageHandler> logger;
+        private readonly ILogger logger;
         private readonly BaseOptions opts;
 
-        public AmqpMessageHandler(ILogger<AmqpMessageHandler> logger, BaseOptions opts) {
+        public AmqpMessageHandler(ILogger logger, BaseOptions opts) {
             this.logger = logger;
             this.opts = opts;
         }
 
         public void Send(Message message) {
-            Address address = new Address(opts.Url);
+            Address address = new Address(opts.GetUrl());
             var connection = new Connection(address);
             Session session = new Session(connection);
 
@@ -28,20 +30,7 @@ namespace AmqpCommon {
             };
             var sender = new SenderLink(session, "shovel", attach, null);
 
-            string rawBody = null;
-            // Get the body
-            if (message.Body is string) {
-                rawBody = message.Body as string;
-            } else if (message.Body is byte[]) {
-                using (var reader = XmlDictionaryReader.CreateBinaryReader(
-                    new MemoryStream(message.Body as byte[]),
-                    null,
-                    XmlDictionaryReaderQuotas.Max)) {
-                    var doc = new XmlDocument();
-                    doc.Load(reader);
-                    rawBody = doc.InnerText;
-                }
-            }
+            string rawBody = GetBody(message);
 
             // duplicate message so that original can be ack'd
             var m = new Message(rawBody) {
@@ -87,5 +76,28 @@ namespace AmqpCommon {
             message.ApplicationProperties[MESSAGE_TYPE_KEY] = eventType;
             return message;
         }
+
+        public static string GetBody(Message message) {
+            string body = null;
+            // Get the body
+            if (message.Body is string s) {
+                body = s;
+            } else if (message.Body is byte[] bytes) {
+                if (bytes[0] == 64) {
+                    using (var reader = XmlDictionaryReader.CreateBinaryReader(new MemoryStream(bytes), null, XmlDictionaryReaderQuotas.Max)) {
+                        var doc = new XmlDocument();
+                        doc.Load(reader);
+                        body = doc.InnerText;
+                    }
+                } else {
+                    body = Encoding.UTF8.GetString(bytes);
+                }
+            } else {
+                throw new ArgumentException($"Message {message.Properties.MessageId} has body with an invalid type {message.Body.GetType()}");
+            }
+
+            return body;
+        }
+
     }
 }

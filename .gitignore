@@ -24,4 +24,6 @@ src/packages/
 *.ncrunchsolution
 
 src/Properties/launchSettings.json
-publish
+publish/
+amqptools.json
+

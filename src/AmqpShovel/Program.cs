@@ -26,7 +26,7 @@ namespace AmqpShovel {
             }
         }
 
-        private static void Run(BaseOptions opts) {
+        private static void Run(ShovelOptions opts) {
             var loggerFactory = LoggerFactory.Create(builder => {
                 builder
                     .AddFilter("Microsoft", LogLevel.Warning)
@@ -42,13 +42,13 @@ namespace AmqpShovel {
             logger.LogInformation("Messages shoveled");
         }
 
-        public static int ResendDeadLetters(AmqpMessageHandler handler, BaseOptions opts) {
+        public static int ResendDeadLetters(AmqpMessageHandler handler, ShovelOptions opts) {
             var dlq = EntityNameHelper.FormatDeadLetterPath(opts.Queue);
             var max = opts.Max;
             logger.LogInformation($"Connecting to {opts.Queue} to shovel maximum of {max} messages");
 
-            if (opts.ConnectionString != null) {
-                var managementClient = new ManagementClient(opts.ConnectionString);
+            if (opts.GetConnectionString() != null) {
+                var managementClient = new ManagementClient(opts.GetConnectionString());
                 var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
                 var messageCount = queue.MessageCountDetails.DeadLetterMessageCount;
                 logger.LogInformation($"Message queue {dlq} has {messageCount} messages");
@@ -62,7 +62,7 @@ namespace AmqpShovel {
             int exitCode = ERROR_SUCCESS;
             Connection connection = null;
             try {
-                Address address = new Address(opts.Url);
+                Address address = new Address(opts.GetUrl());
                 connection = new Connection(address);
                 Session session = new Session(connection);
                 ReceiverLink receiver = new ReceiverLink(session, "receiver-drain", dlq);
@@ -70,9 +70,12 @@ namespace AmqpShovel {
                 Amqp.Message message;
                 int nReceived = 0;
                 receiver.SetCredit(opts.InitialCredit);
-                while ((message = receiver.Receive(opts.TimeSpan)) != null) {
+                while ((message = receiver.Receive(opts.GetTimeSpan())) != null) {
                     nReceived++;
-                    logger.LogInformation("Message(Properties={0}, ApplicationProperties={1}, Body={2}", message.Properties, message.ApplicationProperties, message.Body);
+                    var body = AmqpMessageHandler.GetBody(message);
+                    logger.LogInformation("Message(Properties={0}, ApplicationProperties={1}, Body={2}", message.Properties, message.ApplicationProperties, body);
+
+                    // TODO: should have option to skip messages that are not valid -- i.e. don't have a type
                     handler.Send(message);
                     receiver.Accept(message);
                     if (opts.Max > 0 && nReceived == max) {

@@ -1,7 +1,6 @@
-﻿using AmqpCommon.Commands;
-using CommandLine;
+﻿using CommandLine;
 
-namespace AmqpShovel {
+namespace AmqpCommon.Commands.Shovel {
     public class ShovelOptions : BaseOptions {
         [Option(Default = 100, HelpText = "Maximum dlq messages to process")]
         public int Max { get; set; }

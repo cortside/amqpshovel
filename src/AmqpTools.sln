@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{897B0EBC-BAEA-4131-9292-0D03A26C94CC}"
 	ProjectSection(SolutionItems) = preProject
@@ -9,13 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpShovel", "AmqpShovel\AmqpShovel.csproj", "{34A7F279-4D6F-4135-93EF-9BFE42007E50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpTools.Core", "AmqpTools.Core\AmqpTools.Core.csproj", "{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpPublisher", "AmqpPublisher\AmqpPublisher.csproj", "{4B83DC28-E437-4622-97A3-79010183E828}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpCommon", "AmqpCommon\AmqpCommon.csproj", "{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpQueue", "AmqpQueue\AmqpQueue.csproj", "{DA2BBC00-04C2-4B65-B0DC-10B56C137A46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpTools", "AmqpTools\AmqpTools.csproj", "{3603FDA2-565F-4236-BAAE-EE09E7710930}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,22 +19,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{34A7F279-4D6F-4135-93EF-9BFE42007E50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34A7F279-4D6F-4135-93EF-9BFE42007E50}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34A7F279-4D6F-4135-93EF-9BFE42007E50}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34A7F279-4D6F-4135-93EF-9BFE42007E50}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4B83DC28-E437-4622-97A3-79010183E828}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4B83DC28-E437-4622-97A3-79010183E828}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4B83DC28-E437-4622-97A3-79010183E828}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4B83DC28-E437-4622-97A3-79010183E828}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EA22BC0-44F6-44CE-8176-D5C3E3607DA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA2BBC00-04C2-4B65-B0DC-10B56C137A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA2BBC00-04C2-4B65-B0DC-10B56C137A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA2BBC00-04C2-4B65-B0DC-10B56C137A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA2BBC00-04C2-4B65-B0DC-10B56C137A46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

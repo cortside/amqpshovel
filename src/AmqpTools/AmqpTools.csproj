@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AmqpCommon\AmqpCommon.csproj" />
+    <ProjectReference Include="..\AmqpTools.Core\AmqpTools.Core.csproj" />
   </ItemGroup>
 
 </Project>

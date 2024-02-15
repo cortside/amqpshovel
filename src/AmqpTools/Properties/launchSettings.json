@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AmqpTools": {
+      "commandName": "Project",
+      "commandLineArgs": "queue --key secret --queue shoppingcart.queue"
+    }
+  }
+}

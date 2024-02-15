@@ -1,6 +1,4 @@
-﻿using AmqpCommon.Commands;
-
-namespace AmqpQueue {
+﻿namespace AmqpCommon.Commands.Queue {
     public class QueueOptions : BaseOptions {
     }
 }
