@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="AMQPNetLite" Version="2.4.8" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.3" />
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
     <PackageReference Include="CommandLineParser" Version="2.7.82" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
