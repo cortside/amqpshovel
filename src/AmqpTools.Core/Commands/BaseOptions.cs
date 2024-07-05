@@ -3,7 +3,7 @@ using System.IO;
 using CommandLine;
 using Newtonsoft.Json;
 
-namespace AmqpCommon.Commands {
+namespace AmqpTools.Core.Commands {
     public class BaseOptions {
         [Option('q', "queue", Required = true, HelpText = "Queue")]
         public string Queue { get; set; }
@@ -14,7 +14,7 @@ namespace AmqpCommon.Commands {
         [Option(Default = 1)]
         public double Timeout { get; set; }
 
-        [Option]
+        [Option("namespace", Required = true, HelpText = "Namespace")]
         public string Namespace { get; set; }
 
         [Option]

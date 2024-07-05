@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace AmqpCommon.Commands.Publish {
+namespace AmqpTools.Core.Commands.Publish {
     public class PublishOptions : BaseOptions {
         [Option("data", Required = false, HelpText = "Message data/json")]
         public string Data { get; set; }

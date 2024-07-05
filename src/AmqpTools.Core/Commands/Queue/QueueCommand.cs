@@ -4,8 +4,10 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace AmqpCommon.Commands.Queue {
-    public class QueueCommand : ICommand {
+namespace AmqpTools.Core.Commands.Queue
+{
+    public class QueueCommand : ICommand
+    {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
@@ -14,15 +16,18 @@ namespace AmqpCommon.Commands.Queue {
 
         public ILogger Logger { get; set; }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args)
+        {
             result = Parser.Default.ParseArguments<QueueOptions>(args);
-            result.WithParsed(opts => {
+            result.WithParsed(opts =>
+            {
                 opts.ApplyConfig();
             });
 
         }
 
-        public int Execute() {
+        public int Execute()
+        {
             //// https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/servicebus/Azure.Messaging.ServiceBus/MigrationGuide.md
             //var managementClient = new ServiceBusAdministrationClient(opts.GetConnectionString());
             //var queue = managementClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
@@ -30,15 +35,18 @@ namespace AmqpCommon.Commands.Queue {
             //Console.Out.WriteLine(JsonConvert.SerializeObject(queue.Value));
 
             result
-                .WithParsed(opts => {
+                .WithParsed(opts =>
+                {
                     var managementClient = new ManagementClient(opts.GetConnectionString());
                     var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
 
                     // write to stdout for piping
                     Console.Out.WriteLine(JsonConvert.SerializeObject(queue.MessageCountDetails));
                 })
-                .WithNotParsed(errors => {
-                    foreach (var error in errors) {
+                .WithNotParsed(errors =>
+                {
+                    foreach (var error in errors)
+                    {
                         Console.Out.WriteLine(error.ToString());
                     }
                 });

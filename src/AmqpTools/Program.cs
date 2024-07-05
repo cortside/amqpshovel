@@ -1,5 +1,5 @@
 ﻿using System;
-using AmqpCommon.Commands;
+using AmqpTools.Core.Commands;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools {

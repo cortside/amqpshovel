@@ -4,11 +4,11 @@ using System.Text;
 using System.Xml;
 using Amqp;
 using Amqp.Framing;
-using AmqpCommon.Commands;
+using AmqpTools.Core.Commands;
 using Microsoft.Extensions.Logging;
 using Message = Amqp.Message;
 
-namespace AmqpCommon {
+namespace AmqpTools.Core {
     public class AmqpMessageHandler {
         const string MESSAGE_TYPE_KEY = "Message.Type.FullName";
         private readonly ILogger logger;

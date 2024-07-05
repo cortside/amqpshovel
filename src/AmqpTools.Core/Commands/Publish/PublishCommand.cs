@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using AmqpTools.Core;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 
-namespace AmqpCommon.Commands.Publish {
+namespace AmqpTools.Core.Commands.Publish {
     public class PublishCommand : ICommand {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
