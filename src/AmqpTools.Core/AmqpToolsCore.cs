@@ -61,5 +61,19 @@ namespace AmqpTools.Core {
             }
             return new List<Message>();
         }
+
+        public bool DeleteMessage(DeleteMessageOptions options) {
+            logger.LogDebug("Creating DeleteCommand");
+            var command = new CommandFactory().CreateCommand<DeleteMessageOptions, bool>(factory, typeof(DeleteMessageCommand));
+            if (command != null) {
+                logger.LogDebug("Deleteing messages as Service");
+
+                var result = command.ServiceExecute(options);
+
+                logger.LogDebug("Done Deleteing messages as Service");
+                return result;
+            }
+            return false;
+        }
     }
 }

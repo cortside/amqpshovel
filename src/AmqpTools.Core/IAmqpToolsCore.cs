@@ -7,6 +7,9 @@ using Microsoft.Azure.ServiceBus.Management;
 
 namespace AmqpTools.Core {
     public interface IAmqpToolsCore {
+
+        bool DeleteMessage(DeleteMessageOptions options);
+
         MessageCountDetails GetQueueCountDetails(QueueOptions options);
 
         void ShovelMessages(ShovelOptions options);

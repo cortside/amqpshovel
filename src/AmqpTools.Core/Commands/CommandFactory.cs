@@ -15,6 +15,7 @@ namespace AmqpTools.Core.Commands {
                 {"queue", typeof(QueueCommand)},
                 {"shovel", typeof(ShovelCommand)},
                 {"peek", typeof(PeekCommand)},
+                {"delete", typeof(DeleteMessageCommand)},
                 {"publish", typeof(PublishCommand)}
             };
         }
