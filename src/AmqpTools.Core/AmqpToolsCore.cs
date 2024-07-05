@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using AmqpTools.Core.Commands;
+using AmqpTools.Core.Commands.Peek;
 using AmqpTools.Core.Commands.Queue;
 using AmqpTools.Core.Commands.Shovel;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -43,6 +46,20 @@ namespace AmqpTools.Core {
                 return result;
             }
             return null;
+        }
+
+        public IList<Message> PeekMessages(PeekOptions options) {
+            logger.LogDebug("Creating PeekCommand");
+            var command = new CommandFactory().CreateCommand<PeekOptions, IList<Message>>(factory, typeof(PeekCommand));
+            if (command != null) {
+                logger.LogDebug("peeking messages as Service");
+
+                var result = command.ServiceExecute(options);
+
+                logger.LogDebug("Done peeking messages as Service");
+                return result;
+            }
+            return new List<Message>();
         }
     }
 }

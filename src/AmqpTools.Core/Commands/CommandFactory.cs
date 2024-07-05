@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AmqpTools.Core.Commands.Peek;
 using AmqpTools.Core.Commands.Publish;
 using AmqpTools.Core.Commands.Queue;
 using AmqpTools.Core.Commands.Shovel;
@@ -13,6 +14,7 @@ namespace AmqpTools.Core.Commands {
             commands = new Dictionary<string, Type>() {
                 {"queue", typeof(QueueCommand)},
                 {"shovel", typeof(ShovelCommand)},
+                {"peek", typeof(PeekCommand)},
                 {"publish", typeof(PublishCommand)}
             };
         }
