@@ -6,7 +6,7 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.Shovel {
-    public class ShovelCommand : IServiceCommand<ShovelOptions> {
+    public class ShovelCommand : IServiceCommand<ShovelOptions, int> {
         const int ERROR_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
@@ -39,7 +39,7 @@ namespace AmqpTools.Core.Commands.Shovel {
             return exitCode;
         }
 
-        public object ServiceExecute(ShovelOptions options) {
+        public int ServiceExecute(ShovelOptions options) {
             return Shovel(options);
         }
 

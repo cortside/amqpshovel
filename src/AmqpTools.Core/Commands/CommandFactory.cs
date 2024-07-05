@@ -31,12 +31,12 @@ namespace AmqpTools.Core.Commands {
             return command;
         }
 
-        public IServiceCommand<TOptions> CreateCommand<TOptions>(ILoggerFactory loggerFactory, Type type) {
+        public IServiceCommand<TOptions, TResult> CreateCommand<TOptions, TResult>(ILoggerFactory loggerFactory, Type type) {
             if (!commands.ContainsValue(type)) {
                 throw new InvalidOperationException($"unknown command type {nameof(type)}");
             }
 
-            var command = Activator.CreateInstance(type) as IServiceCommand<TOptions>;
+            var command = Activator.CreateInstance(type) as IServiceCommand<TOptions, TResult>;
             command.Logger = loggerFactory.CreateLogger(type);
 
             return command;

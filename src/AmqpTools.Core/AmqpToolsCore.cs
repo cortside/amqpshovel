@@ -19,7 +19,7 @@ namespace AmqpTools.Core {
 
         public void ShovelMessages(ShovelOptions options) {
             logger.LogDebug("Creating ShovelCommand");
-            var command = new CommandFactory().CreateCommand<ShovelOptions>(factory, typeof(ShovelCommand));
+            var command = new CommandFactory().CreateCommand<ShovelOptions, int>(factory, typeof(ShovelCommand));
             if (command != null) {
                 logger.LogDebug("Executing Shovel as Service");
 

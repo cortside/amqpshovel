@@ -83,5 +83,7 @@ namespace AmqpTools.Core.Commands {
                 Queue ??= json.Queue;
             }
         }
+
+
     }
 }
