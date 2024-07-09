@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands.Queue {
-    public class QueueCommand : IServiceCommand<QueueOptions, MessageCountDetails> {
+    public class QueueCommand : IServiceCommand<QueueOptions, QueueRuntimeInfo> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
@@ -31,7 +31,7 @@ namespace AmqpTools.Core.Commands.Queue {
 
             result
                 .WithParsed(opts => {
-                    var details = GetCountDetails(opts);
+                    var details = GetRuntimeInfo(opts);
                     Console.Out.WriteLine(JsonConvert.SerializeObject(details));
                 })
                 .WithNotParsed(errors => {
@@ -43,14 +43,14 @@ namespace AmqpTools.Core.Commands.Queue {
             return EXIT_SUCCESS;
         }
 
-        public MessageCountDetails ServiceExecute(QueueOptions options) {
-            return GetCountDetails(options);
+        public QueueRuntimeInfo ServiceExecute(QueueOptions options) {
+            return GetRuntimeInfo(options);
         }
 
-        private MessageCountDetails GetCountDetails(QueueOptions opts) {
+        private QueueRuntimeInfo GetRuntimeInfo(QueueOptions opts) {
             var managementClient = new ManagementClient(opts.GetConnectionString());
             var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-            return queue.MessageCountDetails;
+            return queue;
         }
     }
 }

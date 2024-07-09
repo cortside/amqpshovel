@@ -112,8 +112,8 @@ namespace AmqpTools.Core.Commands.Peek {
             Scheduled
         }
 
-        public AmqpConnection Connect(DeleteMessageOptions options) {
-            Logger.LogInformation("Connecting to {Url}.", options.GetUrl());
+        internal AmqpConnection Connect(DeleteMessageOptions options) {
+            Logger.LogDebug("Connecting to {Url}.", options.GetUrl());
             try {
                 Amqp.Address address = new Amqp.Address(options.GetUrl());
                 var connection = new Connection(address);
@@ -127,7 +127,7 @@ namespace AmqpTools.Core.Commands.Peek {
             }
         }
 
-        public class AmqpConnection {
+        internal class AmqpConnection {
             public Connection Connection { get; set; }
             public Session Session { get; set; }
         }

@@ -34,9 +34,9 @@ namespace AmqpTools.Core {
             }
         }
 
-        public MessageCountDetails GetQueueCountDetails(QueueOptions options) {
+        public QueueRuntimeInfo GetQueueRuntimeInfo(QueueOptions options) {
             logger.LogDebug("Creating QueueCommand");
-            var command = new CommandFactory().CreateCommand<QueueOptions, MessageCountDetails>(factory, typeof(QueueCommand));
+            var command = new CommandFactory().CreateCommand<QueueOptions, QueueRuntimeInfo>(factory, typeof(QueueCommand));
             if (command != null) {
                 logger.LogDebug("getting queue message counts as Service");
 

@@ -10,7 +10,7 @@ namespace AmqpTools.Core {
 
         bool DeleteMessage(DeleteMessageOptions options);
 
-        MessageCountDetails GetQueueCountDetails(QueueOptions options);
+        QueueRuntimeInfo GetQueueRuntimeInfo(QueueOptions options);
 
         void ShovelMessages(ShovelOptions options);
 
