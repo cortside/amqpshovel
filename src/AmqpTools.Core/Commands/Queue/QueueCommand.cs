@@ -1,11 +1,12 @@
 ﻿using System;
+using AmqpTools.Core.Models;
 using CommandLine;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands.Queue {
-    public class QueueCommand : IServiceCommand<QueueOptions, QueueRuntimeInfo> {
+    public class QueueCommand : IServiceCommand<QueueOptions, AmqpToolsQueueRuntimeInfo> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
@@ -43,14 +44,32 @@ namespace AmqpTools.Core.Commands.Queue {
             return EXIT_SUCCESS;
         }
 
-        public QueueRuntimeInfo ServiceExecute(QueueOptions options) {
+        public AmqpToolsQueueRuntimeInfo ServiceExecute(QueueOptions options) {
             return GetRuntimeInfo(options);
         }
 
-        private QueueRuntimeInfo GetRuntimeInfo(QueueOptions opts) {
+        private AmqpToolsQueueRuntimeInfo GetRuntimeInfo(QueueOptions opts) {
             var managementClient = new ManagementClient(opts.GetConnectionString());
             var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-            return queue;
+            return Map(queue);
+        }
+
+        private AmqpToolsQueueRuntimeInfo Map(QueueRuntimeInfo queue) {
+            return new AmqpToolsQueueRuntimeInfo {
+                Path = queue.Path,
+                MessageCount = queue.MessageCount,
+                MessageCountDetails = new AmqpToolsMessageCountDetails {
+                    ActiveMessageCount = queue.MessageCountDetails.ActiveMessageCount,
+                    DeadLetterMessageCount = queue.MessageCountDetails.DeadLetterMessageCount,
+                    ScheduledMessageCount = queue.MessageCountDetails.ScheduledMessageCount,
+                    TransferMessageCount = queue.MessageCountDetails.TransferMessageCount,
+                    TransferDeadLetterMessageCount = queue.MessageCountDetails.TransferDeadLetterMessageCount
+                },
+                SizeInBytes = queue.SizeInBytes,
+                CreatedAt = queue.CreatedAt,
+                UpdatedAt = queue.UpdatedAt,
+                AccessedAt = queue.AccessedAt
+            };
         }
     }
 }

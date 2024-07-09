@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using AmqpTools.Core;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 

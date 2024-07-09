@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace AmqpTools.Core.Commands.Peek {
+namespace AmqpTools.Core.Commands.DeleteMessage {
     public class DeleteMessageOptions : BaseOptions {
         [Option("messageId", Required = true, HelpText = "Id of message to delete")]
         public string MessageId { get; set; }

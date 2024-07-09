@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using AmqpTools.Core.Commands;
+using AmqpTools.Core.Commands.DeleteMessage;
 using AmqpTools.Core.Commands.Peek;
 using AmqpTools.Core.Commands.Queue;
 using AmqpTools.Core.Commands.Shovel;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Management;
+using AmqpTools.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -34,9 +34,9 @@ namespace AmqpTools.Core {
             }
         }
 
-        public QueueRuntimeInfo GetQueueRuntimeInfo(QueueOptions options) {
+        public AmqpToolsQueueRuntimeInfo GetQueueRuntimeInfo(QueueOptions options) {
             logger.LogDebug("Creating QueueCommand");
-            var command = new CommandFactory().CreateCommand<QueueOptions, QueueRuntimeInfo>(factory, typeof(QueueCommand));
+            var command = new CommandFactory().CreateCommand<QueueOptions, AmqpToolsQueueRuntimeInfo>(factory, typeof(QueueCommand));
             if (command != null) {
                 logger.LogDebug("getting queue message counts as Service");
 
@@ -48,9 +48,9 @@ namespace AmqpTools.Core {
             return null;
         }
 
-        public IList<Message> PeekMessages(PeekOptions options) {
+        public IList<AmqpToolsMessage> PeekMessages(PeekOptions options) {
             logger.LogDebug("Creating PeekCommand");
-            var command = new CommandFactory().CreateCommand<PeekOptions, IList<Message>>(factory, typeof(PeekCommand));
+            var command = new CommandFactory().CreateCommand<PeekOptions, IList<AmqpToolsMessage>>(factory, typeof(PeekCommand));
             if (command != null) {
                 logger.LogDebug("peeking messages as Service");
 
@@ -59,7 +59,7 @@ namespace AmqpTools.Core {
                 logger.LogDebug("Done peeking messages as Service");
                 return result;
             }
-            return new List<Message>();
+            return new List<AmqpToolsMessage>();
         }
 
         public bool DeleteMessage(DeleteMessageOptions options) {

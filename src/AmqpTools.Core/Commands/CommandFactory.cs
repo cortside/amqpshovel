@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AmqpTools.Core.Commands.DeleteMessage;
 using AmqpTools.Core.Commands.Peek;
 using AmqpTools.Core.Commands.Publish;
 using AmqpTools.Core.Commands.Queue;

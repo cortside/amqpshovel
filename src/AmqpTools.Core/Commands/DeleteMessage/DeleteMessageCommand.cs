@@ -6,7 +6,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
-namespace AmqpTools.Core.Commands.Peek {
+namespace AmqpTools.Core.Commands.DeleteMessage {
     public class DeleteMessageCommand : IServiceCommand<DeleteMessageOptions, bool> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
@@ -115,7 +115,7 @@ namespace AmqpTools.Core.Commands.Peek {
         internal AmqpConnection Connect(DeleteMessageOptions options) {
             Logger.LogDebug("Connecting to {Url}.", options.GetUrl());
             try {
-                Amqp.Address address = new Amqp.Address(options.GetUrl());
+                Address address = new Address(options.GetUrl());
                 var connection = new Connection(address);
                 Session session = new Session(connection);
 
