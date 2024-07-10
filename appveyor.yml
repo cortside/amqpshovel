@@ -54,10 +54,13 @@ after_build:
 
       gci -include *Core.csproj -Recurse | %{ 
           $csproj = ($_.Fullname).Replace('.nuspec','.csproj')
+          echo "$csproj";
           if((Test-Path -path $_.Fullname) -and (Test-Path -path $csproj )) { 
               dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
           }
       }
+      ls artifacts;
+
   - cmd: 7z a amqptools.zip -r %APPVEYOR_BUILD_FOLDER%\publish\*
   - cmd: appveyor PushArtifact amqptools.zip
 
