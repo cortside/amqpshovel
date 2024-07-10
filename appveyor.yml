@@ -52,7 +52,7 @@ after_build:
       $fileVersion = $fileVersion.replace("feature/", "");
       $fileVersion = $fileVersion.replace("bugfix/", "");
 
-      gci -include *Core.csproj -Recurse | %{ 
+      gci -include *.csproj -path ((get-location).Path + '/src') -Recurse | %{ 
           if(Test-Path -path $_.Fullname) { 
               dotnet pack $_.Fullname --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
           }
