@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Amqp;
+using AmqpTools.Core.Exceptions;
 using CommandLine;
+using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
@@ -75,7 +77,7 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
                     receiver.Release(msg);
                 }
                 if (!success) {
-                    throw new InvalidOperationException($"Message {opts.MessageId} could not be found.");
+                    throw new NotFoundResponseException($"Message {opts.MessageId} could not be found.");
                 }
 
                 Logger.LogInformation("Closing connection");
@@ -123,7 +125,7 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
                 return new AmqpConnection() { Connection = connection, Session = session };
             } catch (Exception ex) {
                 Logger.LogError(ex, "ServiceBusClient failed to establish connection.");
-                throw;
+                throw new AmqpConnectionMessage();
             }
         }
 
@@ -135,9 +137,15 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
         private ManagementClient GetClient(DeleteMessageOptions opts) => new ManagementClient(opts.GetConnectionString());
 
         private MessageCountDetails GetQueue(DeleteMessageOptions opts) {
-            var managementClient = GetClient(opts);
-            var messages = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-            return messages.MessageCountDetails;
+            try {
+                var managementClient = GetClient(opts);
+                var messages = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
+                return messages.MessageCountDetails;
+
+            } catch (MessagingEntityNotFoundException ex) {
+                Logger.LogError(ex, "Queue not found {Queue}", opts.Queue);
+                throw new NotFoundResponseException($"Queue not found {opts.Queue}");
+            }
         }
     }
 }

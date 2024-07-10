@@ -1,6 +1,9 @@
 ﻿using System;
+using AmqpTools.Core.Exceptions;
 using AmqpTools.Core.Models;
 using CommandLine;
+using Cortside.Common.Messages.MessageExceptions;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -49,9 +52,18 @@ namespace AmqpTools.Core.Commands.Queue {
         }
 
         private AmqpToolsQueueRuntimeInfo GetRuntimeInfo(QueueOptions opts) {
-            var managementClient = new ManagementClient(opts.GetConnectionString());
-            var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-            return Map(queue);
+            try {
+
+                var managementClient = new ManagementClient(opts.GetConnectionString());
+                var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
+                return Map(queue);
+            } catch (MessagingEntityNotFoundException ex) {
+                Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
+                throw new NotFoundResponseException($"Queue not found {opts.Queue}");
+            } catch (Exception ex) {
+                Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
+                throw new AmqpConnectionMessage();
+            }
         }
 
         private AmqpToolsQueueRuntimeInfo Map(QueueRuntimeInfo queue) {

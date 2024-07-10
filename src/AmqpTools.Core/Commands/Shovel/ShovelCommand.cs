@@ -1,6 +1,8 @@
 ﻿using System;
 using Amqp;
+using AmqpTools.Core.Exceptions;
 using CommandLine;
+using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
@@ -48,18 +50,26 @@ namespace AmqpTools.Core.Commands.Shovel {
 
             var dlq = EntityNameHelper.FormatDeadLetterPath(opts.Queue);
             var max = opts.Max;
-            Logger.LogInformation($"Connecting to {opts.Queue} to shovel maximum of {max} messages");
+            Logger.LogInformation("Connecting to {Queue} to shovel maximum of {Max} messages", opts.Queue, max);
 
-            if (opts.GetConnectionString() != null) {
-                var managementClient = new ManagementClient(opts.GetConnectionString());
-                var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-                var messageCount = queue.MessageCountDetails.DeadLetterMessageCount;
-                Logger.LogInformation($"Message queue {dlq} has {messageCount} messages");
+            try {
+                if (opts.GetConnectionString() != null) {
+                    var managementClient = new ManagementClient(opts.GetConnectionString());
+                    var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
+                    var messageCount = queue.MessageCountDetails.DeadLetterMessageCount;
+                    Logger.LogInformation("Message queue {Dlq} has {MessageCount} messages", dlq, messageCount);
 
-                if (messageCount < opts.Max) {
-                    max = Convert.ToInt32(messageCount);
-                    Logger.LogInformation($"resetting max messages to {max}");
+                    if (messageCount < opts.Max) {
+                        max = Convert.ToInt32(messageCount);
+                        Logger.LogInformation("resetting max messages to {Max}", max);
+                    }
                 }
+            } catch (MessagingEntityNotFoundException ex) {
+                Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
+                throw new NotFoundResponseException($"Queue not found {opts.Queue}");
+            } catch (Exception ex) {
+                Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
+                throw new AmqpShovelException();
             }
 
             int exitCode = ERROR_SUCCESS;
@@ -94,11 +104,12 @@ namespace AmqpTools.Core.Commands.Shovel {
                 session.Close();
                 connection.Close();
             } catch (Exception e) {
-                Logger.LogError(e, "Exception {0}.");
+                Logger.LogError(e, "Exception {0}.", e.Message);
                 if (null != connection) {
                     connection.Close();
                 }
                 exitCode = ERROR_OTHER;
+                throw new AmqpShovelException();
             }
 
             Logger.LogInformation("done");

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AmqpTools.Core.Exceptions;
 using AmqpTools.Core.Models;
 using CommandLine;
+using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Azure.ServiceBus.InteropExtensions;
@@ -52,22 +54,23 @@ namespace AmqpTools.Core.Commands.Peek {
             string formattedQueue = FormatQueue(opts.Queue, opts.MessageType);
             Logger.LogInformation("Peeking {Count} messages from {FormattedQueue}.", opts.Count, formattedQueue);
 
-            var receiver = new MessageReceiver(opts.GetConnectionString(), formattedQueue, ReceiveMode.PeekLock);
-            bool success;
             var messages = new List<Message>();
             try {
+                var receiver = new MessageReceiver(opts.GetConnectionString(), formattedQueue, ReceiveMode.PeekLock);
+
                 messages = receiver.PeekAsync(opts.Count).GetAwaiter().GetResult().ToList();
 
-                success = true;
                 receiver.CloseAsync().GetAwaiter().GetResult();
 
+            } catch (MessagingEntityNotFoundException ex) {
+                Logger.LogError(ex, "Error peeking messages: {Message}", ex.Message);
+                throw new NotFoundResponseException($"Queue not found {opts.Queue}");
             } catch (Exception ex) {
-                Logger.LogError(ex, "Error peeking messages");
-                success = false;
+                Logger.LogError(ex, "Error peeking messages: {Message}", ex.Message);
+                throw new AmqpPeekException();
             }
-            if (success) {
-                Logger.LogInformation("messages peeked");
-            }
+
+            Logger.LogInformation("messages peeked");
             return messages.ConvertAll(m => Map(m));
         }
 

@@ -39,14 +39,14 @@ namespace AmqpTools.Core {
                 Properties = message.Properties
             };
 
-            logger.LogInformation($"publishing message {message.Properties.MessageId} to {opts.Queue} with event type {message.ApplicationProperties[MESSAGE_TYPE_KEY]} with body:\n{rawBody}");
+            logger.LogInformation("publishing message {MessageId} to {Queue} with event type {Message_Type_Key}", message.Properties.MessageId, opts.Queue, message.ApplicationProperties[MESSAGE_TYPE_KEY]);
 
             try {
                 sender.Send(m);
-                logger.LogInformation($"successfully published message {message.Properties.MessageId}");
+                logger.LogInformation("successfully published message {MessageId}", message.Properties.MessageId);
             } finally {
                 if (sender.Error != null) {
-                    logger.LogError($"ERROR: [{sender.Error.Condition}] {sender.Error.Description}");
+                    logger.LogError("ERROR: [{Condition}] {Description}", sender.Error.Condition, sender.Error.Description);
                 }
                 if (!sender.IsClosed) {
                     sender.Close(TimeSpan.FromSeconds(5));
