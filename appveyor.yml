@@ -52,7 +52,7 @@ after_build:
       $fileVersion = $fileVersion.replace("feature/", "");
       $fileVersion = $fileVersion.replace("bugfix/", "");
 
-      gci -include *.nuspec -Recurse | %{ 
+      gci -include *Core.csproj -Recurse | %{ 
           $csproj = ($_.Fullname).Replace('.nuspec','.csproj')
           if((Test-Path -path $_.Fullname) -and (Test-Path -path $csproj )) { 
               dotnet pack $csproj --configuration $env:configuration -o ((get-location).Path + '\artifacts') /property:Version=$fileVersion 
