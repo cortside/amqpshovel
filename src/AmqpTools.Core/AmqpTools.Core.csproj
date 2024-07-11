@@ -11,10 +11,7 @@
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AmqpTools.Core.Exceptions\AmqpTools.Core.Exceptions.csproj" />
+    <PackageReference Include="Cortside.Common.Messages" Version="6.2.408" />
   </ItemGroup>
 
 </Project>

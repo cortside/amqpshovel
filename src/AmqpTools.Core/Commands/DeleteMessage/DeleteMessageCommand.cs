@@ -125,7 +125,7 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
                 return new AmqpConnection() { Connection = connection, Session = session };
             } catch (Exception ex) {
                 Logger.LogError(ex, "ServiceBusClient failed to establish connection.");
-                throw new AmqpConnectionMessage();
+                throw new AmqpConnectionException();
             }
         }
 

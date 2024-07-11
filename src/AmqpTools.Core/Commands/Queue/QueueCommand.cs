@@ -62,7 +62,7 @@ namespace AmqpTools.Core.Commands.Queue {
                 throw new NotFoundResponseException($"Queue not found {opts.Queue}");
             } catch (Exception ex) {
                 Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
-                throw new AmqpConnectionMessage();
+                throw new AmqpConnectionException();
             }
         }
 
