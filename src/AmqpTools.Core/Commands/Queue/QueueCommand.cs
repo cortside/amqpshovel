@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands.Queue {
-    [Verb("queue", HelpText = "gets runtime info for a queue")]
     public class QueueCommand : ICommand, IServiceCommand<QueueOptions, AmqpToolsQueueRuntimeInfo> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;

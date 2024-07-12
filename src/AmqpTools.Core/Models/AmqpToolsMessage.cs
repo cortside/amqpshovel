@@ -6,9 +6,9 @@ namespace AmqpTools.Core.Models {
     /// </summary>
     public class AmqpToolsMessage {
         /// <summary>
-        /// Body
+        /// Body, should be json
         /// </summary>
-        public object Body { get; set; }
+        public string Body { get; set; }
         /// <summary>
         /// MessageId
         /// </summary>

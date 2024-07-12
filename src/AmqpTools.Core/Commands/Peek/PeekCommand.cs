@@ -7,18 +7,17 @@ using CommandLine;
 using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
-using Microsoft.Azure.ServiceBus.InteropExtensions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands.Peek {
-    [Verb("peek", HelpText = "peeks at a queue for amqp messages")]
     public class PeekCommand : ICommand, IServiceCommand<PeekOptions, IList<AmqpToolsMessage>> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
 
         private ParserResult<PeekOptions> result;
+        private AmqpMessageHandler handler;
 
         public ILogger Logger { get; set; }
 
@@ -36,6 +35,7 @@ namespace AmqpTools.Core.Commands.Peek {
                 var messages = PeekMessages(opts);
                 foreach (var message in messages) {
                     Console.Out.WriteLine(JsonConvert.SerializeObject(message));
+                    Console.Out.WriteLine();
                 }
             })
                 .WithNotParsed(errors => {
@@ -57,6 +57,8 @@ namespace AmqpTools.Core.Commands.Peek {
 
             var messages = new List<Message>();
             try {
+                handler = new AmqpMessageHandler(Logger, opts);
+
                 var receiver = new MessageReceiver(opts.GetConnectionString(), formattedQueue, ReceiveMode.PeekLock);
 
                 messages = receiver.PeekAsync(opts.Count).GetAwaiter().GetResult().ToList();
@@ -76,8 +78,22 @@ namespace AmqpTools.Core.Commands.Peek {
         }
 
         private AmqpToolsMessage Map(Message message) {
+            string body = handler.GetBody(message);
+
+            List<string> errors = new List<string>();
+            JsonConvert.DeserializeObject(body,
+                new JsonSerializerSettings {
+                    Error = (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args) => {
+                        errors.Add(args.ErrorContext.Error.Message);
+                        args.ErrorContext.Handled = true;
+                    }
+                });
+            if (errors.Count > 0) {
+                throw new InternalServerErrorResponseException($"Message {message.MessageId} has errors deserializing messsage body: {string.Join(", ", errors)}");
+            }
+
             return new AmqpToolsMessage {
-                Body = message.GetBody<string>(),
+                Body = body,
                 MessageId = message.MessageId,
                 CorrelationId = message.CorrelationId,
                 PartitionKey = message.PartitionKey,
@@ -107,5 +123,6 @@ namespace AmqpTools.Core.Commands.Peek {
             DeadLetter,
             Scheduled
         }
+
     }
 }

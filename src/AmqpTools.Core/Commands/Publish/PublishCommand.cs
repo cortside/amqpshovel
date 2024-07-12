@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using AmqpTools.Core.Exceptions;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.Publish {
-    [Verb("publish", HelpText = "publishes an amqp message")]
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class PublishCommand : ICommand {
         private const int EXIT_SUCCESS = 0;
@@ -36,7 +36,8 @@ namespace AmqpTools.Core.Commands.Publish {
                     }
 
                     if (string.IsNullOrEmpty(opts.Data)) {
-                        Logger.LogWarning("Data or File must be specified and have data");
+                        Logger.LogError("Data or File must be specified and have data");
+                        throw new InvalidArgumentMessageException($"Data or File option must be specified and have data");
                     }
 
                     var message = AmqpMessageHandler.CreateMessage(opts.EventType, opts.Data, null);

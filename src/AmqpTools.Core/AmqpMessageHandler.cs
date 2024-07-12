@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using Amqp;
 using Amqp.Framing;
 using AmqpTools.Core.Commands;
+using Cortside.Common.Messages.MessageExceptions;
+using Microsoft.Azure.ServiceBus.InteropExtensions;
 using Microsoft.Extensions.Logging;
 using Message = Amqp.Message;
 
@@ -83,21 +86,40 @@ namespace AmqpTools.Core {
             if (message.Body is string s) {
                 body = s;
             } else if (message.Body is byte[] bytes) {
-                if (bytes[0] == 64) {
-                    using (var reader = XmlDictionaryReader.CreateBinaryReader(new MemoryStream(bytes), null, XmlDictionaryReaderQuotas.Max)) {
-                        var doc = new XmlDocument();
-                        doc.Load(reader);
-                        body = doc.InnerText;
-                    }
-                } else {
-                    body = Encoding.UTF8.GetString(bytes);
-                }
+                body = GetBody(bytes);
             } else {
-                throw new ArgumentException($"Message {message.Properties.MessageId} has body with an invalid type {message.Body.GetType()}");
+                throw new InternalServerErrorResponseException($"Message {message.Properties.MessageId} has body with an invalid type {message.Body.GetType()}");
             }
 
             return body;
         }
 
+        internal string GetBody(Microsoft.Azure.ServiceBus.Message message) {
+            if (message.Body != null && message.Body.Any()) {
+                return GetBody(message.Body);
+            } else {
+                try {
+                    return message.GetBody<string>();
+                } catch (Exception e) {
+                    logger.LogError(e, "Error getting body from Microsoft.Azure.ServiceBus.Message {Message}", e.Message);
+                    throw new InternalServerErrorResponseException($"Message {message.MessageId} has body with invalid contents");
+                }
+            }
+        }
+
+        private static string GetBody(byte[] bytes) {
+            string body = null;
+
+            if (bytes[0] == 64) {
+                using (var reader = XmlDictionaryReader.CreateBinaryReader(new MemoryStream(bytes), null, XmlDictionaryReaderQuotas.Max)) {
+                    var doc = new XmlDocument();
+                    doc.Load(reader);
+                    body = doc.InnerText;
+                }
+            } else {
+                body = Encoding.UTF8.GetString(bytes);
+            }
+            return body;
+        }
     }
 }

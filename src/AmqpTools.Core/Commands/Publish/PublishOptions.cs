@@ -3,6 +3,7 @@ using CommandLine;
 
 namespace AmqpTools.Core.Commands.Publish {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
+    [Verb("publish", HelpText = "publishes an amqp message")]
     public class PublishOptions : BaseOptions {
         public PublishOptions() { }
 
