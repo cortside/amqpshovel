@@ -9,7 +9,8 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.DeleteMessage {
-    public class DeleteMessageCommand : IServiceCommand<DeleteMessageOptions, bool> {
+    [Verb("delete", HelpText = "deletes a message from a queue")]
+    public class DeleteMessageCommand : ICommand, IServiceCommand<DeleteMessageOptions, bool> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;

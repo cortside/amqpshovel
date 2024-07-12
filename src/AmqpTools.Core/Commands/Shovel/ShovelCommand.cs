@@ -8,7 +8,8 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.Shovel {
-    public class ShovelCommand : IServiceCommand<ShovelOptions, int> {
+    [Verb("shovel", HelpText = "shovels deadletterqueue for a queue")]
+    public class ShovelCommand : ICommand, IServiceCommand<ShovelOptions, int> {
         const int ERROR_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
@@ -16,6 +17,8 @@ namespace AmqpTools.Core.Commands.Shovel {
         private ParserResult<ShovelOptions> result;
 
         public ILogger Logger { get; set; }
+
+        public ShovelCommand() { }
 
         public void ParseArguments(string[] args) {
             result = Parser.Default.ParseArguments<ShovelOptions>(args);

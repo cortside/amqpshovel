@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CommandLine;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands {
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class BaseOptions {
-        [Option('q', "queue", Required = true, HelpText = "Queue")]
+        public BaseOptions() { }
+
+        [Option('q', "Queue", Required = true, HelpText = "Queue")]
         public string Queue { get; set; }
 
         [Option(Default = 10)]
@@ -14,13 +19,13 @@ namespace AmqpTools.Core.Commands {
         [Option(Default = 1)]
         public double Timeout { get; set; }
 
-        [Option("namespace", Required = true, HelpText = "Namespace")]
+        [Option('n', "namespace", Required = true, HelpText = "Namespace to connect to")]
         public string Namespace { get; set; }
 
-        [Option]
+        [Option('k', "key", Required = true, HelpText = "Key to connect to namespace")]
         public string Key { get; set; }
 
-        [Option]
+        [Option('p', "policyname", Required = true, HelpText = "Policy for key used to connect to namespace")]
         public string PolicyName { get; set; }
 
         [Option(Default = "amqps")]

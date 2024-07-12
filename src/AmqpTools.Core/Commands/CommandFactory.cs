@@ -23,11 +23,11 @@ namespace AmqpTools.Core.Commands {
 
         public ICommand CreateCommand(ILoggerFactory loggerFactory, string[] args) {
             var name = args[0];
-            if (!commands.ContainsKey(name)) {
+            if (!commands.TryGetValue(name, out Type value)) {
                 throw new ArgumentException($"unknown command {name}", nameof(name));
             }
 
-            var type = commands[name];
+            var type = value;
             var command = Activator.CreateInstance(type) as ICommand;
             command.Logger = loggerFactory.CreateLogger(type);
             command.ParseArguments(args);

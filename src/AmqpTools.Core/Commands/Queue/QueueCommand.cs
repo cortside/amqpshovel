@@ -9,12 +9,18 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands.Queue {
-    public class QueueCommand : IServiceCommand<QueueOptions, AmqpToolsQueueRuntimeInfo> {
+    [Verb("queue", HelpText = "gets runtime info for a queue")]
+    public class QueueCommand : ICommand, IServiceCommand<QueueOptions, AmqpToolsQueueRuntimeInfo> {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
         const int ERROR_OTHER = 2;
 
         private ParserResult<QueueOptions> result;
+
+        public QueueCommand() {
+            if (GetType().GetConstructor(Type.EmptyTypes) == null)
+                throw new InvalidProgramException("Parameterless constructor required.");
+        }
 
         public ILogger Logger { get; set; }
 

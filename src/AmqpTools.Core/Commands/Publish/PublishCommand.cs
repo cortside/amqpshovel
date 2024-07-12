@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.Publish {
+    [Verb("publish", HelpText = "publishes an amqp message")]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class PublishCommand : ICommand {
         private const int EXIT_SUCCESS = 0;
         const int ERROR_NO_MESSAGE = 1;
@@ -12,6 +15,8 @@ namespace AmqpTools.Core.Commands.Publish {
         private ParserResult<PublishOptions> result;
 
         public ILogger Logger { get; set; }
+
+        public PublishCommand() { }
 
         public void ParseArguments(string[] args) {
             result = Parser.Default.ParseArguments<PublishOptions>(args);

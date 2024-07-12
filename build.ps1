@@ -9,6 +9,6 @@ echo $env:Configuration
 echo $runtime
 
 & ./clean.ps1
-dotnet publish -r $runtime -c Debug /p:PublishSingleFile=true /p:PublishTrimmed=true --output publish/$runtime src/AmqpTools/AmqpTools.csproj
+dotnet publish -r $runtime -c Release /p:PublishSingleFile=true /p:PublishTrimmed=true --output publish/$runtime src/AmqpTools/AmqpTools.csproj
 
 ls publish/$runtime
