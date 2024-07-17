@@ -89,7 +89,7 @@ namespace AmqpTools.Core.Commands.Peek {
                     }
                 });
             if (errors.Count > 0) {
-                throw new InternalServerErrorResponseException($"Message {message.MessageId} has errors deserializing messsage body: {string.Join(", ", errors)}");
+                Logger.LogWarning("Message {MessageId} has errors deserializing messsage body: {Errors}", message.MessageId, string.Join(", ", errors));
             }
 
             return new AmqpToolsMessage {
