@@ -25,7 +25,7 @@ namespace AmqpTools.Core.Commands.Publish {
                 opts.ApplyConfig();
             });
 
-            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+            if (!string.IsNullOrWhiteSpace(result.Value?.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
                 var env = config.Environments.First(x => x.Name == result.Value.Environment);
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;

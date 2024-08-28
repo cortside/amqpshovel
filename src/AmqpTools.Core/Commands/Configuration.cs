@@ -2,6 +2,6 @@
 
 namespace AmqpTools.Core.Commands {
     public class Configuration {
-        public List<Environment> Environments { get; set; }
+        public List<Environment> Environments { get; set; } = new List<Environment>();
     }
 }
