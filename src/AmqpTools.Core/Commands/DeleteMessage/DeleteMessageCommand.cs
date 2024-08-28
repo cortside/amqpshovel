@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Amqp;
 using AmqpTools.Core.Exceptions;
 using CommandLine;
@@ -18,19 +19,27 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
 
         public ILogger Logger { get; set; }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args, Configuration config) {
             result = Parser.Default.ParseArguments<DeleteMessageOptions>(args);
             result.WithParsed(opts => {
                 opts.ApplyConfig();
             });
 
+            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+                var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                result.Value.Namespace ??= env.Namespace;
+                result.Value.PolicyName ??= env.PolicyName;
+                result.Value.Key ??= env.Key;
+            }
         }
 
         public int Execute() {
+            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
+
             result
-            .WithParsed(opts => {
-                DeleteMessage(opts);
-            })
+                .WithParsed(opts => {
+                    DeleteMessage(opts);
+                })
                 .WithNotParsed(errors => {
                     foreach (var error in errors) {
                         Console.Out.WriteLine(error.ToString());

@@ -43,6 +43,7 @@ namespace AmqpTools.Core {
             };
 
             logger.LogInformation("publishing message {MessageId} to {Queue} with event type {Message_Type_Key}", message.Properties.MessageId, opts.Queue, message.ApplicationProperties[MESSAGE_TYPE_KEY]);
+            logger.LogDebug("Body for message {MessageId} is {Body}", message.Properties.MessageId, rawBody);
 
             try {
                 sender.Send(m);
@@ -81,6 +82,10 @@ namespace AmqpTools.Core {
         }
 
         public static string GetBody(Message message) {
+            if (message.Body == null) {
+                return null;
+            }
+
             string body = null;
             // Get the body
             if (message.Body is string s) {
@@ -95,16 +100,37 @@ namespace AmqpTools.Core {
         }
 
         internal string GetBody(Microsoft.Azure.ServiceBus.Message message) {
-            if (message.Body != null && message.Body.Any()) {
-                return GetBody(message.Body);
-            } else {
+            string body;
+            if (message.Body == null) {
                 try {
                     return message.GetBody<string>();
                 } catch (Exception e) {
-                    logger.LogError(e, "Error getting body from Microsoft.Azure.ServiceBus.Message {Message}", e.Message);
-                    throw new InternalServerErrorResponseException($"Message {message.MessageId} has body with invalid contents");
+                    // do nothing
                 }
+
+                try {
+                    return GetBody(message.GetBody<byte[]>());
+                } catch (Exception e) {
+                    // do nothing
+                }
+
+                return null;
             }
+
+            if (message.Body.Any()) {
+                return GetBody(message.Body);
+            }
+
+            //else {
+            //    try {
+            //        return message.GetBody<string>();
+            //    } catch (Exception e) {
+            //        logger.LogError(e, "Error getting body from Microsoft.Azure.ServiceBus.Message {Message}", e.Message);
+            //        throw new InternalServerErrorResponseException($"Message {message.MessageId} has body with invalid contents");
+            //    }
+            //}
+
+            return null;
         }
 
         private static string GetBody(byte[] bytes) {

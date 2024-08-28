@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using AmqpTools.Core.Exceptions;
 using AmqpTools.Core.Models;
 using CommandLine;
@@ -17,18 +18,25 @@ namespace AmqpTools.Core.Commands.Queue {
         private ParserResult<QueueOptions> result;
 
         public QueueCommand() {
-            if (GetType().GetConstructor(Type.EmptyTypes) == null)
+            if (GetType().GetConstructor(Type.EmptyTypes) == null) {
                 throw new InvalidProgramException("Parameterless constructor required.");
+            }
         }
 
         public ILogger Logger { get; set; }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args, Configuration config) {
             result = Parser.Default.ParseArguments<QueueOptions>(args);
             result.WithParsed(opts => {
                 opts.ApplyConfig();
             });
 
+            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+                var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                result.Value.Namespace ??= env.Namespace;
+                result.Value.PolicyName ??= env.PolicyName;
+                result.Value.Key ??= env.Key;
+            }
         }
 
         public int Execute() {
@@ -37,6 +45,8 @@ namespace AmqpTools.Core.Commands.Queue {
             //var queue = managementClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
             //// write to stdout for piping
             //Console.Out.WriteLine(JsonConvert.SerializeObject(queue.Value));
+
+            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
 
             result
                 .WithParsed(opts => {

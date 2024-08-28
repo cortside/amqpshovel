@@ -22,7 +22,7 @@ namespace AmqpTools.Test {
         [Fact]
         public void ShouldThrowOnUnknownCommand() {
             // Act & assert
-            new CommandFactory().Invoking(x => x.CreateCommand(loggerFactory, new string[] { "blah" }))
+            new CommandFactory().Invoking(x => x.CreateCommand(loggerFactory, new string[] { "blah" }, new Configuration()))
                 .Should().Throw<ArgumentException>()
                 .WithMessage("unknown command blah (Parameter 'name')");
         }
@@ -30,13 +30,12 @@ namespace AmqpTools.Test {
         [Fact]
         public void ShouldCreateCommand() {
             // Act
-            var command = new CommandFactory().CreateCommand(loggerFactory, new string[] { "publish" });
+            var command = new CommandFactory().CreateCommand(loggerFactory, new string[] { "publish" }, new Configuration());
 
             // assert
             command.Should().NotBeNull();
             command.Should().BeOfType<PublishCommand>();
             command.Logger.Should().NotBeNull();
-
         }
     }
 }

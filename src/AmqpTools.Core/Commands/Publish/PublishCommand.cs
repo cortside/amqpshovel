@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using AmqpTools.Core.Exceptions;
 using CommandLine;
 using Microsoft.Extensions.Logging;
@@ -18,15 +19,23 @@ namespace AmqpTools.Core.Commands.Publish {
 
         public PublishCommand() { }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args, Configuration config) {
             result = Parser.Default.ParseArguments<PublishOptions>(args);
             result.WithParsed(opts => {
                 opts.ApplyConfig();
             });
 
+            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+                var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                result.Value.Namespace ??= env.Namespace;
+                result.Value.PolicyName ??= env.PolicyName;
+                result.Value.Key ??= env.Key;
+            }
         }
 
         public int Execute() {
+            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
+
             result
                 .WithParsed(opts => {
                     var handler = new AmqpMessageHandler(Logger, opts);

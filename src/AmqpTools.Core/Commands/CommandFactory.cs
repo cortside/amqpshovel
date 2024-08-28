@@ -21,7 +21,7 @@ namespace AmqpTools.Core.Commands {
             };
         }
 
-        public ICommand CreateCommand(ILoggerFactory loggerFactory, string[] args) {
+        public ICommand CreateCommand(ILoggerFactory loggerFactory, string[] args, Configuration config) {
             var name = args[0];
             if (!commands.TryGetValue(name, out Type value)) {
                 throw new ArgumentException($"unknown command {name}", nameof(name));
@@ -30,7 +30,7 @@ namespace AmqpTools.Core.Commands {
             var type = value;
             var command = Activator.CreateInstance(type) as ICommand;
             command.Logger = loggerFactory.CreateLogger(type);
-            command.ParseArguments(args);
+            command.ParseArguments(args, config);
 
             return command;
         }

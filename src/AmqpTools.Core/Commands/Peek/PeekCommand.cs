@@ -21,23 +21,31 @@ namespace AmqpTools.Core.Commands.Peek {
 
         public ILogger Logger { get; set; }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args, Configuration config) {
             result = Parser.Default.ParseArguments<PeekOptions>(args);
             result.WithParsed(opts => {
                 opts.ApplyConfig();
             });
 
+            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+                var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                result.Value.Namespace ??= env.Namespace;
+                result.Value.PolicyName ??= env.PolicyName;
+                result.Value.Key ??= env.Key;
+            }
         }
 
         public int Execute() {
+            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
+
             result
-            .WithParsed(opts => {
-                var messages = PeekMessages(opts);
-                foreach (var message in messages) {
-                    Console.Out.WriteLine(JsonConvert.SerializeObject(message));
-                    Console.Out.WriteLine();
-                }
-            })
+                .WithParsed(opts => {
+                    var messages = PeekMessages(opts);
+                    foreach (var message in messages) {
+                        Console.Out.WriteLine(JsonConvert.SerializeObject(message));
+                        Console.Out.WriteLine();
+                    }
+                })
                 .WithNotParsed(errors => {
                     foreach (var error in errors) {
                         Console.Out.WriteLine(error.ToString());
@@ -55,7 +63,7 @@ namespace AmqpTools.Core.Commands.Peek {
             string formattedQueue = FormatQueue(opts.Queue, opts.MessageType);
             Logger.LogInformation("Peeking {Count} messages from {FormattedQueue}.", opts.Count, formattedQueue);
 
-            var messages = new List<Message>();
+            List<Message> messages;
             try {
                 handler = new AmqpMessageHandler(Logger, opts);
 
@@ -64,7 +72,6 @@ namespace AmqpTools.Core.Commands.Peek {
                 messages = receiver.PeekAsync(opts.Count).GetAwaiter().GetResult().ToList();
 
                 receiver.CloseAsync().GetAwaiter().GetResult();
-
             } catch (MessagingEntityNotFoundException ex) {
                 Logger.LogError(ex, "Error peeking messages: {Message}", ex.Message);
                 throw new NotFoundResponseException($"Queue not found {opts.Queue}");
@@ -80,16 +87,19 @@ namespace AmqpTools.Core.Commands.Peek {
         private AmqpToolsMessage Map(Message message) {
             string body = handler.GetBody(message);
 
-            List<string> errors = new List<string>();
-            JsonConvert.DeserializeObject(body,
-                new JsonSerializerSettings {
-                    Error = (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args) => {
-                        errors.Add(args.ErrorContext.Error.Message);
-                        args.ErrorContext.Handled = true;
-                    }
-                });
-            if (errors.Count > 0) {
-                Logger.LogWarning("Message {MessageId} has errors deserializing messsage body: {Errors}", message.MessageId, string.Join(", ", errors));
+            if (body != null) {
+                List<string> errors = new List<string>();
+                JsonConvert.DeserializeObject(body,
+                    new JsonSerializerSettings {
+                        Error = (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args) => {
+                            errors.Add(args.ErrorContext.Error.Message);
+                            args.ErrorContext.Handled = true;
+                        }
+                    });
+                if (errors.Count > 0) {
+                    Logger.LogWarning("Message {MessageId} has errors deserializing message body: {Errors}",
+                        message.MessageId, string.Join(", ", errors));
+                }
             }
 
             return new AmqpToolsMessage {

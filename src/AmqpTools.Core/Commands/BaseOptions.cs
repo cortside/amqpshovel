@@ -5,10 +5,10 @@ using CommandLine;
 using Newtonsoft.Json;
 
 namespace AmqpTools.Core.Commands {
-
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class BaseOptions {
-        public BaseOptions() { }
+        [Option('e', "environment", Required = false, HelpText = "Environment", SetName = "environment")]
+        public string Environment { get; set; }
 
         [Option('q', "Queue", Required = true, HelpText = "Queue")]
         public string Queue { get; set; }
@@ -19,16 +19,16 @@ namespace AmqpTools.Core.Commands {
         [Option(Default = 1)]
         public double Timeout { get; set; }
 
-        [Option('n', "namespace", Required = true, HelpText = "Namespace to connect to")]
+        [Option('n', "namespace", Required = false, HelpText = "Namespace to connect to", SetName = "configuration")]
         public string Namespace { get; set; }
 
-        [Option('k', "key", Required = true, HelpText = "Key to connect to namespace")]
+        [Option('k', "key", Required = false, HelpText = "Key to connect to namespace", SetName = "configuration")]
         public string Key { get; set; }
 
-        [Option('p', "policyname", Required = true, HelpText = "Policy for key used to connect to namespace")]
+        [Option('p', "policyname", Required = false, HelpText = "Policy for key used to connect to namespace", SetName = "configuration")]
         public string PolicyName { get; set; }
 
-        [Option(Default = "amqps")]
+        [Option(Default = "amqps", SetName = "configuration")]
         public string Protocol { get; set; }
 
         [Option(Default = 1)]
@@ -36,7 +36,6 @@ namespace AmqpTools.Core.Commands {
 
         [Option("config", Default = "amqptools.json", Required = false, HelpText = "filename for Message data/json")]
         public string Config { get; set; }
-
 
         //private string Url => $"{Protocol}://{PolicyName}:{Key}@{Namespace}/";
 
@@ -88,7 +87,5 @@ namespace AmqpTools.Core.Commands {
                 Queue ??= json.Queue;
             }
         }
-
-
     }
 }

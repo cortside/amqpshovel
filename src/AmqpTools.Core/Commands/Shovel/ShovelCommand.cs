@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Amqp;
 using AmqpTools.Core.Exceptions;
 using CommandLine;
@@ -19,14 +20,23 @@ namespace AmqpTools.Core.Commands.Shovel {
 
         public ShovelCommand() { }
 
-        public void ParseArguments(string[] args) {
+        public void ParseArguments(string[] args, Configuration config) {
             result = Parser.Default.ParseArguments<ShovelOptions>(args);
             result.WithParsed(opts => {
                 opts.ApplyConfig();
             });
+
+            if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
+                var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                result.Value.Namespace ??= env.Namespace;
+                result.Value.PolicyName ??= env.PolicyName;
+                result.Value.Key ??= env.Key;
+            }
         }
 
         public int Execute() {
+            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
+
             var exitCode = ERROR_SUCCESS;
             result
                 .WithParsed(opts => {
@@ -84,14 +94,18 @@ namespace AmqpTools.Core.Commands.Shovel {
 
                 Amqp.Message message;
                 int nReceived = 0;
+                var timeout = opts.GetTimeSpan();
                 receiver.SetCredit(opts.InitialCredit);
-                while ((message = receiver.Receive(opts.GetTimeSpan())) != null) {
+                while ((message = receiver.Receive(timeout)) != null) {
                     nReceived++;
                     var body = AmqpMessageHandler.GetBody(message);
                     Logger.LogInformation("Message(Properties={0}, ApplicationProperties={1}, Body={2}", message.Properties, message.ApplicationProperties, body);
 
                     // TODO: should have option to skip messages that are not valid -- i.e. don't have a type
-                    handler.Send(message);
+                    if (body != null) {
+                        handler.Send(message);
+                    }
+
                     receiver.Accept(message);
                     if (opts.Max > 0 && nReceived == max) {
                         Logger.LogInformation("max messages received");
@@ -117,7 +131,5 @@ namespace AmqpTools.Core.Commands.Shovel {
             Logger.LogInformation("done");
             return exitCode;
         }
-
-
     }
 }
