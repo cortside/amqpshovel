@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Amqp;
 using AmqpTools.Core.Exceptions;
@@ -63,7 +64,6 @@ namespace AmqpTools.Core.Commands.Shovel {
             var dlq = EntityNameHelper.FormatDeadLetterPath(opts.Queue);
             var max = opts.Max;
             Logger.LogInformation("Connecting to {Queue} to shovel maximum of {Max} messages", opts.Queue, max);
-
             try {
                 if (opts.GetConnectionString() != null) {
                     var managementClient = new ManagementClient(opts.GetConnectionString());
@@ -95,23 +95,42 @@ namespace AmqpTools.Core.Commands.Shovel {
                 Amqp.Message message;
                 int nReceived = 0;
                 var timeout = opts.GetTimeSpan();
-                receiver.SetCredit(opts.InitialCredit);
+                receiver.SetCredit(max);
+                var useMessageId = !string.IsNullOrEmpty(opts.MessageId);
+                List<Amqp.Message> messagesToRelease = new List<Amqp.Message>();
+
                 while ((message = receiver.Receive(timeout)) != null) {
                     nReceived++;
                     var body = AmqpMessageHandler.GetBody(message);
-                    Logger.LogInformation("Message(Properties={0}, ApplicationProperties={1}, Body={2}", message.Properties, message.ApplicationProperties, body);
+                    Logger.LogInformation("Reading message {MessageId}", message.Properties.MessageId);
+                    Logger.LogDebug("Message(Properties={0}, ApplicationProperties={1}, Body={2}", message.Properties, message.ApplicationProperties, body);
 
-                    // TODO: should have option to skip messages that are not valid -- i.e. don't have a type
-                    if (body != null) {
+                    if (body != null && useMessageId && message.Properties.MessageId == opts.MessageId) {
+                        Logger.LogInformation("Shoveling single message {MessageId}", opts.MessageId);
                         handler.Send(message);
+                        receiver.Accept(message);
+                    } else if (useMessageId) {
+                        messagesToRelease.Add(message);
                     }
 
-                    receiver.Accept(message);
+                    // TODO: should have option to skip messages that are not valid -- i.e. don't have a type
+                    if (body != null && !useMessageId) {
+                        handler.Send(message);
+                        receiver.Accept(message);
+                    }
+
                     if (opts.Max > 0 && nReceived == max) {
                         Logger.LogInformation("max messages received");
                         break;
                     }
                 }
+
+                Logger.LogInformation("releasing {Count} messages", messagesToRelease.Count);
+                foreach (var msg in messagesToRelease) {
+                    Logger.LogDebug("Releasing message {MessageId}, it is not the one to be shoveled", msg.Properties.MessageId);
+                    receiver.Release(msg);
+                }
+
                 if (message == null) {
                     Logger.LogInformation("No message");
                     exitCode = ERROR_NO_MESSAGE;
