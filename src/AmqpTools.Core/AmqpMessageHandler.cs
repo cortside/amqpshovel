@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using Amqp;
 using Amqp.Framing;
 using AmqpTools.Core.Commands;
+using Azure.Core.Amqp;
+using Azure.Messaging.ServiceBus;
 using Cortside.Common.Messages.MessageExceptions;
-using Microsoft.Azure.ServiceBus.InteropExtensions;
 using Microsoft.Extensions.Logging;
 using Message = Amqp.Message;
 
@@ -99,38 +102,34 @@ namespace AmqpTools.Core {
             return body;
         }
 
-        internal string GetBody(Microsoft.Azure.ServiceBus.Message message) {
-            string body;
-            if (message.Body == null) {
-                try {
-                    return message.GetBody<string>();
-                } catch (Exception e) {
-                    // do nothing
+        internal static string GetBody(ServiceBusReceivedMessage message) {
+            AmqpAnnotatedMessage amqpMessage = message.GetRawAmqpMessage();
+            if (amqpMessage.Body.TryGetValue(out object value)) {
+                // handle the value body
+                if (value is string s) {
+                    return s;
+                } else if (value is byte[] bytes) {
+                    return GetBody(bytes);
                 }
-
-                try {
-                    return GetBody(message.GetBody<byte[]>());
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                return null;
+            } else if (amqpMessage.Body.TryGetSequence(out IEnumerable<IList<object>> sequence)) {
+                // handle the sequence body
+                Console.WriteLine("Got sequence");
+            } else if (amqpMessage.Body.TryGetData(out IEnumerable<ReadOnlyMemory<byte>> bytes)) {
+                // handle the data body - note that unlike when accessing the Body property of the received message,
+                // we actually get back a list of byte arrays, not a single byte array. If you were to access the Body property,
+                // the data would be flattened into a single byte array.
+                Console.WriteLine("got bytes");
+                return GetBody(ConvertToByteArray(bytes));
+                //return GetBody(message.Body.ToArray());
             }
-
-            if (message.Body.Any()) {
-                return GetBody(message.Body);
-            }
-
-            //else {
-            //    try {
-            //        return message.GetBody<string>();
-            //    } catch (Exception e) {
-            //        logger.LogError(e, "Error getting body from Microsoft.Azure.ServiceBus.Message {Message}", e.Message);
-            //        throw new InternalServerErrorResponseException($"Message {message.MessageId} has body with invalid contents");
-            //    }
-            //}
 
             return null;
+        }
+
+        private static byte[] ConvertToByteArray(IEnumerable<ReadOnlyMemory<byte>> readonlyData) {
+            return readonlyData
+                .SelectMany(memory => MemoryMarshal.AsBytes(memory.Span).ToArray())
+                .ToArray();
         }
 
         private static string GetBody(byte[] bytes) {
@@ -147,5 +146,7 @@ namespace AmqpTools.Core {
             }
             return body;
         }
+
+
     }
 }

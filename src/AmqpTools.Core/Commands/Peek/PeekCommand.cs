@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using AmqpTools.Core.Exceptions;
 using AmqpTools.Core.Models;
+using AmqpTools.Core.Util;
+using Azure.Messaging.ServiceBus;
 using CommandLine;
 using Cortside.Common.Messages.MessageExceptions;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -17,7 +17,6 @@ namespace AmqpTools.Core.Commands.Peek {
         const int ERROR_OTHER = 2;
 
         private ParserResult<PeekOptions> result;
-        private AmqpMessageHandler handler;
 
         public ILogger Logger { get; set; }
 
@@ -29,6 +28,7 @@ namespace AmqpTools.Core.Commands.Peek {
 
             if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
                 var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                Logger.LogInformation("Environment {Env} found in config, using environment settings", env.Name);
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
@@ -36,19 +36,18 @@ namespace AmqpTools.Core.Commands.Peek {
         }
 
         public int Execute() {
-            Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
+            Logger.LogInformation("Connecting to {Namespace} as policy {PolicyName} for queue {Queue}", result.Value.Namespace, result.Value.PolicyName, result.Value.Queue);
 
             result
                 .WithParsed(opts => {
                     var messages = PeekMessages(opts);
                     foreach (var message in messages) {
-                        Console.Out.WriteLine(JsonConvert.SerializeObject(message));
-                        Console.Out.WriteLine();
+                        Logger.LogDebug(JsonConvert.SerializeObject(message));
                     }
                 })
                 .WithNotParsed(errors => {
                     foreach (var error in errors) {
-                        Console.Out.WriteLine(error.ToString());
+                        Logger.LogInformation(error.ToString());
                     }
                 });
 
@@ -60,19 +59,21 @@ namespace AmqpTools.Core.Commands.Peek {
         }
 
         private IList<AmqpToolsMessage> PeekMessages(PeekOptions opts) {
-            string formattedQueue = FormatQueue(opts.Queue, opts.MessageType);
+            string formattedQueue = EntityNameHelper.FormatQueue(opts.Queue, opts.MessageType);
             Logger.LogInformation("Peeking {Count} messages from {FormattedQueue}.", opts.Count, formattedQueue);
 
-            List<Message> messages;
+            ServiceBusClient client = new(opts.GetConnectionString());
+
+            List<ServiceBusReceivedMessage> messages;
             try {
-                handler = new AmqpMessageHandler(Logger, opts);
+                var receiver = client.CreateReceiver(formattedQueue, new ServiceBusReceiverOptions {
+                    ReceiveMode = ServiceBusReceiveMode.PeekLock
+                });
 
-                var receiver = new MessageReceiver(opts.GetConnectionString(), formattedQueue, ReceiveMode.PeekLock);
-
-                messages = receiver.PeekAsync(opts.Count).GetAwaiter().GetResult().ToList();
+                messages = receiver.PeekMessagesAsync(opts.Count).GetAwaiter().GetResult().ToList();
 
                 receiver.CloseAsync().GetAwaiter().GetResult();
-            } catch (MessagingEntityNotFoundException ex) {
+            } catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.MessagingEntityNotFound) {
                 Logger.LogError(ex, "Error peeking messages: {Message}", ex.Message);
                 throw new NotFoundResponseException($"Queue not found {opts.Queue}");
             } catch (Exception ex) {
@@ -84,8 +85,8 @@ namespace AmqpTools.Core.Commands.Peek {
             return messages.ConvertAll(m => Map(m));
         }
 
-        private AmqpToolsMessage Map(Message message) {
-            string body = handler.GetBody(message);
+        private AmqpToolsMessage Map(ServiceBusReceivedMessage message) {
+            string body = AmqpMessageHandler.GetBody(message);
 
             if (body != null) {
                 List<string> errors = new List<string>();
@@ -102,37 +103,24 @@ namespace AmqpTools.Core.Commands.Peek {
                 }
             }
 
+            var raw = message.GetRawAmqpMessage();
+            var systemProperties = raw.DeliveryAnnotations.Concat(raw.MessageAnnotations
+                .Where(kvp => !raw.DeliveryAnnotations.ContainsKey(kvp.Key)))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
             return new AmqpToolsMessage {
                 Body = body,
                 MessageId = message.MessageId,
                 CorrelationId = message.CorrelationId,
                 PartitionKey = message.PartitionKey,
-                ExpiresAtUtc = message.ExpiresAtUtc,
+                ExpiresAtUtc = message.ExpiresAt.DateTime,
                 ContentType = message.ContentType,
-                ScheduledEnqueueTimeUtc = message.ScheduledEnqueueTimeUtc,
-                UserProperties = message.UserProperties,
-                SystemProperties = message.SystemProperties
+                ScheduledEnqueueTimeUtc = message.ScheduledEnqueueTime.DateTime,
+                UserProperties = message.ApplicationProperties,
+                SystemProperties = systemProperties,
             };
         }
 
-        private string FormatQueue(string queue, string messageType) {
-            Enum.TryParse(typeof(MessageType), messageType, true, out object type);
-            switch (type) {
-                case MessageType.Active:
-                    return queue;
-                case MessageType.DeadLetter:
-                    return EntityNameHelper.FormatDeadLetterPath(queue);
-                default:
-                    // Not supported
-                    throw new InvalidOperationException($"Peeking queues by type {messageType} is not supported");
-            }
-        }
-
-        public enum MessageType {
-            Active,
-            DeadLetter,
-            Scheduled
-        }
 
     }
 }
