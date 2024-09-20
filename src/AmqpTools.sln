@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpTools.Core", "AmqpTools
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmqpTools", "AmqpTools\AmqpTools.csproj", "{3603FDA2-565F-4236-BAAE-EE09E7710930}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmqpTools.Core.Test", "AmqpTools.Core.Test\AmqpTools.Core.Test.csproj", "{2B8BA46C-FA43-46FC-8F25-FD8CAE42CD82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3603FDA2-565F-4236-BAAE-EE09E7710930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B8BA46C-FA43-46FC-8F25-FD8CAE42CD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B8BA46C-FA43-46FC-8F25-FD8CAE42CD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B8BA46C-FA43-46FC-8F25-FD8CAE42CD82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B8BA46C-FA43-46FC-8F25-FD8CAE42CD82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

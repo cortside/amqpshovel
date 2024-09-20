@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CommandLine;
 using Newtonsoft.Json;
 
-namespace AmqpCommon.Commands {
+namespace AmqpTools.Core.Commands {
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class BaseOptions {
-        [Option('q', "queue", Required = true, HelpText = "Queue")]
+        [Option('e', "environment", Required = false, HelpText = "Environment", SetName = "environment")]
+        public string Environment { get; set; }
+
+        [Option('q', "Queue", Required = true, HelpText = "Queue")]
         public string Queue { get; set; }
 
         [Option(Default = 10)]
@@ -14,16 +19,16 @@ namespace AmqpCommon.Commands {
         [Option(Default = 1)]
         public double Timeout { get; set; }
 
-        [Option]
+        [Option('n', "namespace", Required = false, HelpText = "Namespace to connect to", SetName = "configuration")]
         public string Namespace { get; set; }
 
-        [Option]
+        [Option('k', "key", Required = false, HelpText = "Key to connect to namespace", SetName = "configuration")]
         public string Key { get; set; }
 
-        [Option]
+        [Option('p', "policyname", Required = false, HelpText = "Policy for key used to connect to namespace", SetName = "configuration")]
         public string PolicyName { get; set; }
 
-        [Option(Default = "amqps")]
+        [Option(Default = "amqps", SetName = "configuration")]
         public string Protocol { get; set; }
 
         [Option(Default = 1)]
@@ -31,7 +36,6 @@ namespace AmqpCommon.Commands {
 
         [Option("config", Default = "amqptools.json", Required = false, HelpText = "filename for Message data/json")]
         public string Config { get; set; }
-
 
         //private string Url => $"{Protocol}://{PolicyName}:{Key}@{Namespace}/";
 
@@ -54,6 +58,10 @@ namespace AmqpCommon.Commands {
         //    }
         //}
 
+        /// <summary>
+        /// Do not log this value
+        /// </summary>
+        /// <returns></returns>
         public string GetUrl() {
             return $"{Protocol}://{PolicyName}:{Key}@{Namespace}/";
         }

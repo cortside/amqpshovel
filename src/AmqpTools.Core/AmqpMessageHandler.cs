@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using Amqp;
 using Amqp.Framing;
-using AmqpCommon.Commands;
+using AmqpTools.Core.Commands;
+using Azure.Core.Amqp;
+using Azure.Messaging.ServiceBus;
+using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Extensions.Logging;
 using Message = Amqp.Message;
 
-namespace AmqpCommon {
+namespace AmqpTools.Core {
     public class AmqpMessageHandler {
         const string MESSAGE_TYPE_KEY = "Message.Type.FullName";
         private readonly ILogger logger;
@@ -39,14 +45,15 @@ namespace AmqpCommon {
                 Properties = message.Properties
             };
 
-            logger.LogInformation($"publishing message {message.Properties.MessageId} to {opts.Queue} with event type {message.ApplicationProperties[MESSAGE_TYPE_KEY]} with body:\n{rawBody}");
+            logger.LogInformation("publishing message {MessageId} to {Queue} with event type {Message_Type_Key}", message.Properties.MessageId, opts.Queue, message.ApplicationProperties[MESSAGE_TYPE_KEY]);
+            logger.LogDebug("Body for message {MessageId} is {Body}", message.Properties.MessageId, rawBody);
 
             try {
                 sender.Send(m);
-                logger.LogInformation($"successfully published message {message.Properties.MessageId}");
+                logger.LogInformation("successfully published message {MessageId}", message.Properties.MessageId);
             } finally {
                 if (sender.Error != null) {
-                    logger.LogError($"ERROR: [{sender.Error.Condition}] {sender.Error.Description}");
+                    logger.LogError("ERROR: [{Condition}] {Description}", sender.Error.Condition, sender.Error.Description);
                 }
                 if (!sender.IsClosed) {
                     sender.Close(TimeSpan.FromSeconds(5));
@@ -78,26 +85,68 @@ namespace AmqpCommon {
         }
 
         public static string GetBody(Message message) {
+            if (message.Body == null) {
+                return null;
+            }
+
             string body = null;
             // Get the body
             if (message.Body is string s) {
                 body = s;
             } else if (message.Body is byte[] bytes) {
-                if (bytes[0] == 64) {
-                    using (var reader = XmlDictionaryReader.CreateBinaryReader(new MemoryStream(bytes), null, XmlDictionaryReaderQuotas.Max)) {
-                        var doc = new XmlDocument();
-                        doc.Load(reader);
-                        body = doc.InnerText;
-                    }
-                } else {
-                    body = Encoding.UTF8.GetString(bytes);
-                }
+                body = GetBody(bytes);
             } else {
-                throw new ArgumentException($"Message {message.Properties.MessageId} has body with an invalid type {message.Body.GetType()}");
+                throw new InternalServerErrorResponseException($"Message {message.Properties.MessageId} has body with an invalid type {message.Body.GetType()}");
             }
 
             return body;
         }
+
+        internal static string GetBody(ServiceBusReceivedMessage message) {
+            AmqpAnnotatedMessage amqpMessage = message.GetRawAmqpMessage();
+            if (amqpMessage.Body.TryGetValue(out object value)) {
+                // handle the value body
+                if (value is string s) {
+                    return s;
+                } else if (value is byte[] bytes) {
+                    return GetBody(bytes);
+                }
+            } else if (amqpMessage.Body.TryGetSequence(out IEnumerable<IList<object>> sequence)) {
+                // handle the sequence body
+                Console.WriteLine("Got sequence");
+            } else if (amqpMessage.Body.TryGetData(out IEnumerable<ReadOnlyMemory<byte>> bytes)) {
+                // handle the data body - note that unlike when accessing the Body property of the received message,
+                // we actually get back a list of byte arrays, not a single byte array. If you were to access the Body property,
+                // the data would be flattened into a single byte array.
+                Console.WriteLine("got bytes");
+                return GetBody(ConvertToByteArray(bytes));
+                //return GetBody(message.Body.ToArray());
+            }
+
+            return null;
+        }
+
+        private static byte[] ConvertToByteArray(IEnumerable<ReadOnlyMemory<byte>> readonlyData) {
+            return readonlyData
+                .SelectMany(memory => MemoryMarshal.AsBytes(memory.Span).ToArray())
+                .ToArray();
+        }
+
+        private static string GetBody(byte[] bytes) {
+            string body = null;
+
+            if (bytes[0] == 64) {
+                using (var reader = XmlDictionaryReader.CreateBinaryReader(new MemoryStream(bytes), null, XmlDictionaryReaderQuotas.Max)) {
+                    var doc = new XmlDocument();
+                    doc.Load(reader);
+                    body = doc.InnerText;
+                }
+            } else {
+                body = Encoding.UTF8.GetString(bytes);
+            }
+            return body;
+        }
+
 
     }
 }
