@@ -58,6 +58,10 @@ namespace AmqpTools.Core.Commands {
         //    }
         //}
 
+        /// <summary>
+        /// Do not log this value
+        /// </summary>
+        /// <returns></returns>
         public string GetUrl() {
             return $"{Protocol}://{PolicyName}:{Key}@{Namespace}/";
         }

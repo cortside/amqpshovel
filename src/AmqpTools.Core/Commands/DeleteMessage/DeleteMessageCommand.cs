@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Amqp;
 using AmqpTools.Core.Exceptions;
+using AmqpTools.Core.Util;
+using Azure.Messaging.ServiceBus.Administration;
 using CommandLine;
 using Cortside.Common.Messages.MessageExceptions;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 
 namespace AmqpTools.Core.Commands.DeleteMessage {
@@ -56,7 +56,7 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
         private bool DeleteMessage(DeleteMessageOptions opts) {
             var success = false;
 
-            string formattedQueue = FormatQueue(opts.Queue, opts.MessageType);
+            string formattedQueue = EntityNameHelper.FormatQueue(opts.Queue, opts.MessageType);
             Logger.LogInformation("Delete Message {MessageId} messages from {FormattedQueue}.", opts.MessageId, formattedQueue);
 
             Logger.LogInformation("Attempting to delete message {MessageId}", opts.MessageId);
@@ -104,27 +104,9 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
             return success;
         }
 
-        private string FormatQueue(string queue, string messageType) {
-            Enum.TryParse(typeof(MessageType), messageType, true, out object type);
-            switch (type) {
-                case MessageType.Active:
-                    return queue;
-                case MessageType.DeadLetter:
-                    return EntityNameHelper.FormatDeadLetterPath(queue);
-                default:
-                    // Not supported
-                    throw new InvalidOperationException($"Peeking queues by type {messageType} is not supported");
-            }
-        }
-
-        public enum MessageType {
-            Active,
-            DeadLetter,
-            Scheduled
-        }
 
         internal AmqpConnection Connect(DeleteMessageOptions options) {
-            Logger.LogDebug("Connecting to {Url}.", options.GetUrl());
+            Logger.LogDebug("Connecting to {Url}.", options.Namespace);
             try {
                 Address address = new Address(options.GetUrl());
                 var connection = new Connection(address);
@@ -143,15 +125,13 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
             public Session Session { get; set; }
         }
 
-        private ManagementClient GetClient(DeleteMessageOptions opts) => new ManagementClient(opts.GetConnectionString());
-
-        private MessageCountDetails GetQueue(DeleteMessageOptions opts) {
+        private QueueRuntimeProperties GetQueue(DeleteMessageOptions opts) {
             try {
-                var managementClient = GetClient(opts);
-                var messages = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-                return messages.MessageCountDetails;
+                var adminClient = new ServiceBusAdministrationClient(opts.GetConnectionString());
+                var queue = adminClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
+                return queue.Value;
 
-            } catch (MessagingEntityNotFoundException ex) {
+            } catch (Exception ex) {
                 Logger.LogError(ex, "Queue not found {Queue}", opts.Queue);
                 throw new NotFoundResponseException($"Queue not found {opts.Queue}");
             }
