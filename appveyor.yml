@@ -73,25 +73,28 @@ artifacts:
   - path: artifacts\**\*.*
     name: deploynuget
 
+#deploy:
+#  - provider: GitHub
+#    description: "$(appveyor_build_version)"
+#    auth_token:
+#      secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
+#    artifact: deploy
+#    draft: false
+#    prerelease: false
+#    on:
+#      branch: master # release from master branch only
+#  - provider: GitHub
+#    description: "$(appveyor_build_version)-develop"
+#    auth_token:
+#      secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
+#    artifact: deploy
+#    draft: false
+#    prerelease: true
+#    on:
+#      branch: develop
+
+
 deploy:
-  - provider: GitHub
-    description: "$(appveyor_build_version)"
-    auth_token:
-      secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
-    artifact: deploy
-    draft: false
-    prerelease: false
-    on:
-      branch: master # release from master branch only
-  - provider: GitHub
-    description: "$(appveyor_build_version)-develop"
-    auth_token:
-      secure: PfMxiwJ07WiudGV8OdaK1gBnW4kpkcv6mTaCoFj2pdhNPy7QLC5jfSkB4OWwNo35
-    artifact: deploy
-    draft: false
-    prerelease: true
-    on:
-      branch: develop
   - provider: NuGet
     artifact: deploynuget
     api_key:
