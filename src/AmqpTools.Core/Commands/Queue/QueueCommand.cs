@@ -33,9 +33,12 @@ namespace AmqpTools.Core.Commands.Queue {
 
             if (!string.IsNullOrWhiteSpace(result.Value.Environment) && config.Environments.Exists(x => x.Name == result.Value.Environment)) {
                 var env = config.Environments.First(x => x.Name == result.Value.Environment);
+                Logger.LogInformation("Environment {Env} found in config, using environment settings", env.Name);
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
+            } else {
+                Logger.LogInformation("Environment {Env} not found in config, using command line settings", result.Value.Environment);
             }
         }
 
