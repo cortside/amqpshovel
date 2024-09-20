@@ -14,8 +14,8 @@ namespace AmqpTools.Test {
                 builder
                     .AddFilter("Microsoft", LogLevel.Warning)
                     .AddFilter("System", LogLevel.Warning)
-                    .SetMinimumLevel(LogLevel.Debug)
-                    .AddConsole();
+                    .SetMinimumLevel(LogLevel.Debug);
+                //.AddConsole();
             });
         }
 

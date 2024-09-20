@@ -2,10 +2,10 @@
 using System.Linq;
 using AmqpTools.Core.Exceptions;
 using AmqpTools.Core.Models;
+using Azure.Messaging.ServiceBus.Administration;
 using CommandLine;
 using Cortside.Common.Messages.MessageExceptions;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -40,12 +40,6 @@ namespace AmqpTools.Core.Commands.Queue {
         }
 
         public int Execute() {
-            //// https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/servicebus/Azure.Messaging.ServiceBus/MigrationGuide.md
-            //var managementClient = new ServiceBusAdministrationClient(opts.GetConnectionString());
-            //var queue = managementClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
-            //// write to stdout for piping
-            //Console.Out.WriteLine(JsonConvert.SerializeObject(queue.Value));
-
             Logger.LogInformation($"Connecting to {result.Value.Namespace} as policy {result.Value.PolicyName} for queue {result.Value.Queue}");
 
             result
@@ -68,10 +62,9 @@ namespace AmqpTools.Core.Commands.Queue {
 
         private AmqpToolsQueueRuntimeInfo GetRuntimeInfo(QueueOptions opts) {
             try {
-
-                var managementClient = new ManagementClient(opts.GetConnectionString());
-                var queue = managementClient.GetQueueRuntimeInfoAsync(opts.Queue).GetAwaiter().GetResult();
-                return Map(queue);
+                var managementClient = new ServiceBusAdministrationClient(opts.GetConnectionString());
+                var queue = managementClient.GetQueueRuntimePropertiesAsync(opts.Queue).GetAwaiter().GetResult();
+                return Map(queue.Value);
             } catch (MessagingEntityNotFoundException ex) {
                 Logger.LogError(ex, "Error getting queue runtime info {Message}", ex.Message);
                 throw new NotFoundResponseException($"Queue not found {opts.Queue}");
@@ -81,21 +74,21 @@ namespace AmqpTools.Core.Commands.Queue {
             }
         }
 
-        private AmqpToolsQueueRuntimeInfo Map(QueueRuntimeInfo queue) {
+        private AmqpToolsQueueRuntimeInfo Map(QueueRuntimeProperties queue) {
             return new AmqpToolsQueueRuntimeInfo {
-                Path = queue.Path,
-                MessageCount = queue.MessageCount,
+                Path = queue.Name,
+                MessageCount = queue.TotalMessageCount,
                 MessageCountDetails = new AmqpToolsMessageCountDetails {
-                    ActiveMessageCount = queue.MessageCountDetails.ActiveMessageCount,
-                    DeadLetterMessageCount = queue.MessageCountDetails.DeadLetterMessageCount,
-                    ScheduledMessageCount = queue.MessageCountDetails.ScheduledMessageCount,
-                    TransferMessageCount = queue.MessageCountDetails.TransferMessageCount,
-                    TransferDeadLetterMessageCount = queue.MessageCountDetails.TransferDeadLetterMessageCount
+                    ActiveMessageCount = queue.ActiveMessageCount,
+                    DeadLetterMessageCount = queue.DeadLetterMessageCount,
+                    ScheduledMessageCount = queue.ScheduledMessageCount,
+                    TransferMessageCount = queue.TransferMessageCount,
+                    TransferDeadLetterMessageCount = queue.TransferDeadLetterMessageCount,
                 },
                 SizeInBytes = queue.SizeInBytes,
-                CreatedAt = queue.CreatedAt,
-                UpdatedAt = queue.UpdatedAt,
-                AccessedAt = queue.AccessedAt
+                CreatedAt = queue.CreatedAt.DateTime,
+                UpdatedAt = queue.UpdatedAt.DateTime,
+                AccessedAt = queue.AccessedAt.DateTime
             };
         }
     }
