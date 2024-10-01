@@ -31,6 +31,11 @@ namespace AmqpTools.Core.Commands.Publish {
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
+                result.Value.Protocol ??= env.Protocol;
+            } else {
+                Logger.LogInformation("Not using an environment from config file");
+                Logger.LogInformation("Config names: {Names}", config?.Environments?.Select(x => x.Name));
+                Logger.LogInformation("Requested environment name: {Name}", result.Value?.Environment);
             }
         }
 

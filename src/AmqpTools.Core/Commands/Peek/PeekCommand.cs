@@ -32,6 +32,7 @@ namespace AmqpTools.Core.Commands.Peek {
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
+                result.Value.Protocol ??= env.Protocol;
             }
         }
 

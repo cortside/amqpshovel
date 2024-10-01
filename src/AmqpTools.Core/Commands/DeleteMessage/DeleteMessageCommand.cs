@@ -31,6 +31,7 @@ namespace AmqpTools.Core.Commands.DeleteMessage {
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
+                result.Value.Protocol ??= env.Protocol;
             }
         }
 

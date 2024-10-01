@@ -25,5 +25,6 @@ src/packages/
 
 src/Properties/launchSettings.json
 publish/
+event-json/
 amqptools.json
 
