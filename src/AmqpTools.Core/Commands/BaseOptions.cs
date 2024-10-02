@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace AmqpTools.Core.Commands {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     public class BaseOptions {
-        [Option('e', "environment", Required = false, HelpText = "Environment", SetName = "environment")]
+        [Option('e', "environment", Required = false, HelpText = "Environment", SetName = "configuration")]
         public string Environment { get; set; }
 
         [Option('q', "Queue", Required = true, HelpText = "Queue")]
@@ -28,7 +28,7 @@ namespace AmqpTools.Core.Commands {
         [Option('p', "policyname", Required = false, HelpText = "Policy for key used to connect to namespace", SetName = "configuration")]
         public string PolicyName { get; set; }
 
-        [Option(Default = "amqps", SetName = "configuration")]
+        [Option(Default = "amqps", Required = false, HelpText = "[amqps|amqp] non-secure typically only for local, i.e. rabbitmq", SetName = "configuration")]
         public string Protocol { get; set; }
 
         [Option(Default = 1)]

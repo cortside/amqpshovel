@@ -37,6 +37,7 @@ namespace AmqpTools.Core.Commands.Queue {
                 result.Value.Namespace ??= env.Namespace;
                 result.Value.PolicyName ??= env.PolicyName;
                 result.Value.Key ??= env.Key;
+                result.Value.Protocol ??= env.Protocol;
             } else {
                 Logger.LogInformation("Environment {Env} not found in config, using command line settings", result.Value.Environment);
             }
