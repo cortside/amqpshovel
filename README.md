@@ -1,6 +1,10 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/f3tnsngabv2dx0t3?svg=true)](https://ci.appveyor.com/project/cortside/cortside-restapiclient)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cortside_amqptools&metric=alert_status)](https://sonarcloud.io/dashboard?id=cortside_amqptools)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cortside_amqptools&metric=coverage)](https://sonarcloud.io/dashboard?id=cortside_amqptools)
+
 # amqptools
 
-AMQPTools 1.0
+CLI tools for interacting with service bus queues.
 
 ## Help
 
